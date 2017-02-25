@@ -213,13 +213,11 @@ configure)	# configure target
 		dep_dir="/usr/local"
 		channel="beta"
 
-		# install rustc
-		[[ ! -x "${dep_dir}/bin/rustc" ]] \
-			&& doas pkg_add -a rust
-
-		# install cargo
-		[[ ! -x "${dep_dir}/bin/cargo" ]] \
-			&& doas pkg_add -a cargo
+		# install rustc-stable
+		if [[ ! -x "${dep_dir}/bin/rustc" ]]; then
+			log "installing rustc-stable (from ports)"
+			${SUDO} pkg_add -a rust
+		fi
 		;;
 	nightly)
 		dep_dir="${install_dir}/beta"
@@ -231,22 +229,22 @@ configure)	# configure target
 			echo "	run: ${build_rust} beta"
 			exit 1
 		fi
-
-		# install cargo-beta
-		if [[ ! -x "${dep_dir}/bin/cargo" ]] ; then
-			echo "error: missing cargo-beta" >&2
-			echo "	run: ${build_rust} beta cargo-install"
-			exit 1
-		fi
 		;;
 	esac
+
+	# require cargo-${target}
+	if [[ ! -x "${install_dir}/${target}/bin/cargo" ]] ; then
+		echo "error: missing cargo-beta" >&2
+		echo "	run: ${build_rust} beta cargo-install"
+		exit 1
+	fi
 
 	# generate config file
 	mkdir -p "${rustc_dir}"
 	exec cat >"${rustc_dir}/config.toml" <<EOF
 [build]
 rustc = "${dep_dir}/bin/rustc"
-cargo = "${dep_dir}/bin/cargo"
+cargo = "${install_dir}/${target}/bin/cargo"
 prefix = "${install_dir}/${target}"
 docs = false
 vendor = true
@@ -348,6 +346,12 @@ cargo-configure)
 	beta)
 		dep_dir="/usr/local"
 		ptarget="stable"
+
+		# install cargo-stable
+		if [[ ! -x "${dep_dir}/bin/cargo" ]]; then
+			log "installing cargo-stable (from ports)"
+			${SUDO} pkg_add -a cargo
+		fi
 		;;
 	nightly)
 		dep_dir="${install_dir}/beta"
@@ -365,7 +369,7 @@ cargo-configure)
 
 	log "configuring cargo-${target}"
 	cd "${cargo_xdir}" && exec env \
-		PATH="${build_dir}/bin:${PATH}" \
+		PATH="${build_dir}/bin:${dep_dir}/bin:${PATH}" \
 		./configure \
 			--prefix="${install_dir}/${target}" \
 			--rustc="${dep_dir}/bin/rustc"

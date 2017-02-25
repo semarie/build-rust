@@ -343,16 +343,20 @@ cargo-patch)
 	[[ ! -e "${cargo_xdir}" ]] \
 		&& "${build_rust}" "${target}" cargo-extract
 
+	# >= libc-0.2.19 : support of OpenBSD i386
+	# >= openssl-0.9.4 : support of LibreSSL
+
 	log "patching cargo-${target}"
 	case "${target}" in
 	beta)
-		# >= libc-0.2.19 : support of OpenBSD i386
-		# >= openssl-0.9.4 : support of LibreSSL
-
 		cd "${cargo_xdir}" && exec /usr/local/bin/cargo update \
 			-p libc \
 			-p openssl -p openssl-sys
 		;;
+	nightly)
+		cd "${cargo_xdir}" && exec "${install_dir}/beta/bin/cargo" update \
+			-p libc \
+			-p openssl -p openssl-sys
 	esac
 	;;
 cargo-configure)

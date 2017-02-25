@@ -165,9 +165,7 @@ patch)	# apply local patches
 		| patch -d "${rustc_xdir}" -p0 -E
 	;;
 rustbuild)	# rustbuild wrapper
-	[[ ! -r "${rustc_xdir}/src/bootstrap/bootstrap.py" ]] \
-		&& "${build_rust}" "${target}" patch
-	[[ ! -r "${rustc_dir}/config.toml" ]] \
+	[[ ! -r "${rustc_dir}/.configure-${target}" ]] \
 		&& "${build_rust}" "${target}" configure
 
 	log "starting rustbuild ${@}"
@@ -179,7 +177,8 @@ rustbuild)	# rustbuild wrapper
 			"$@"
 	;;
 clean)	# run rustbuild clean (do not remove llvm)
-	[[ ! -d "${rustc_dir}/build" ]] && exit 0
+	[[ ! -d "${rustc_dir}/build" || ! -e "${rustc_dir}/.configure-${target}" ]] \
+		&& exit 0
 
 	exec "${build_rust}" "${target}" rustbuild clean
 	;;
@@ -237,6 +236,10 @@ configure)	# configure target
 		"${build_rust}" beta cargo-install
 	fi
 
+	# require source tree
+	[[ ! -r "${rustc_xdir}/src/bootstrap/bootstrap.py" ]] \
+		&& "${build_rust}" "${target}" patch
+
 	# llvm stuff
 	if [[ -n ${llvm_config} ]]; then
 		_llvm='llvm-config'
@@ -246,7 +249,7 @@ configure)	# configure target
 
 	# generate config file
 	mkdir -p "${rustc_dir}"
-	exec cat >"${rustc_dir}/config.toml" <<EOF
+	cat >"${rustc_dir}/config.toml" <<EOF
 [build]
 rustc = "${dep_dir}/bin/rustc"
 cargo = "${install_dir}/${target}/bin/cargo"
@@ -265,6 +268,7 @@ ${_llvm} = "${llvm_config}"
 static-libstdcpp = false
 ninja = true
 EOF
+	touch "${rustc_dir}/.configure-${target}"
 	;;
 build)	# invoke rustbuild for making dist files
 
@@ -394,7 +398,7 @@ cargo-configure)
 		echo "warn: missing rustc-${ptarget}" >&2
 		"${build_rust}" "${ptarget}"
 	fi
-	
+
 	[[ ! -e "${cargo_xdir}" ]] \
 		&& "${build_rust}" "${target}" cargo-patch
 

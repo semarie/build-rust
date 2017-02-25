@@ -339,6 +339,22 @@ cargo-extract)
 
 	exec ln -fs "cargo-${commitid}" "${cargo_dir}/cargo-${target}"
 	;;
+cargo-patch)
+	[[ ! -e "${cargo_xdir}" ]] \
+		&& "${build_rust}" "${target}" cargo-extract
+
+	log "patching cargo-${target}"
+	case "${target}" in
+	beta)
+		# >= libc-0.2.19 : support of OpenBSD i386
+		# >= openssl-0.9.4 : support of LibreSSL
+
+		cd "${cargo_xdir}" && exec /usr/local/bin/cargo update \
+			-p libc \
+			-p openssl -p openssl-sys
+		;;
+	esac
+	;;
 cargo-configure)
 	"${build_rust}" "${target}" pre-configure
 
@@ -365,7 +381,7 @@ cargo-configure)
 	fi
 	
 	[[ ! -e "${cargo_xdir}" ]] \
-		&& "${build_rust}" "${target}" cargo-extract
+		&& "${build_rust}" "${target}" cargo-patch
 
 	log "configuring cargo-${target}"
 	cd "${cargo_xdir}" && exec env \

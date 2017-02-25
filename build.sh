@@ -36,7 +36,7 @@ distfiles_cargo_base="${distfiles_cargo_base:-https://github.com/rust-lang/cargo
 build_dir="${build_dir:-build_dir}"
 install_dir="${install_dir:-install_dir}"
 SUDO="${SUDO:-}"
-ccache="${ccache:-no}"
+ccache="${ccache:-yes}"
 llvm_config="${llvm_config:-}"
 CFLAGS="${CFLAGS:--O2 -pipe}"
 
@@ -123,7 +123,7 @@ init)	# install some required packages (using pkg_add)
 		_llvm='cmake ninja'
 	fi
 
-	if [[ ${ccache} = "no" ]]; then
+	if [[ ${ccache} != "yes" ]]; then
 		_ccache=''
 	else
 		_ccache='ccache'
@@ -191,7 +191,7 @@ pre-configure)
 	# create bin directory wrapper
 	mkdir -p "${build_dir}/bin"
 	for _p in gcc g++; do
-		if [[ "${ccache}" = "no" ]]; then
+		if [[ "${ccache}" != "yes" ]]; then
 			ln -fs "/usr/local/bin/e${_p}" "${build_dir}/bin/${_p}"
 		else	
 			rm -f "${build_dir}/bin/${_p}" || true

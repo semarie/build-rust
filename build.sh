@@ -154,7 +154,7 @@ extract)	# extract rust version from dist_dir to rustc_dir
 	exec tar zxf "${dist_dir}/rust-src-${target}.tar.gz" -C "${rustc_dir}"
 	;;
 patch)	# apply local patches
-	[[ ! -d "${rustc_dir}" ]] && \
+	[[ ! -d "${rustc_xdir}" ]] && \
 		"${build_rust}" "${target}" extract
 
 	log "patching ${target}"

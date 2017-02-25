@@ -239,6 +239,13 @@ configure)	# configure target
 		exit 1
 	fi
 
+	# llvm stuff
+	if [[ -n ${llvm_config} ]]; then
+		_llvm='llvm-config'
+	else
+		_llvm='#llvm-config'
+	fi
+
 	# generate config file
 	mkdir -p "${rustc_dir}"
 	exec cat >"${rustc_dir}/config.toml" <<EOF
@@ -254,7 +261,7 @@ channel = "${channel}"
 codegen-tests = false
 
 [target.${triple_arch}]
-#llvm-config = "/usr/local/bin/llvm-config"
+${_llvm} = "${llvm_config}"
 
 [llvm]
 static-libstdcpp = false

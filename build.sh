@@ -386,6 +386,7 @@ cargo-install)
 		&& "${build_rust}" "${target}" cargo-build
 
 	log "installing cargo-${target}"
+	mkdir -p -- "${install_dir}/${target}/bin"
 	exec cp "${cargo_xdir}/target/${triple_arch}/release/cargo" \
 		"${install_dir}/${target}/bin/cargo"
 	;;

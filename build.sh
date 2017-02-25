@@ -225,18 +225,16 @@ configure)	# configure target
 
 		# install rustc-beta
 		if [[ ! -x "${dep_dir}/bin/rustc" ]] ; then
-			echo "error: missing rustc-beta" >&2
-			echo "	run: ${build_rust} beta"
-			exit 1
+			echo "warn: missing rustc-beta" >&2
+			"${build_rust}" beta
 		fi
 		;;
 	esac
 
 	# require cargo-${target}
 	if [[ ! -x "${install_dir}/${target}/bin/cargo" ]] ; then
-		echo "error: missing cargo-beta" >&2
-		echo "	run: ${build_rust} beta cargo-install"
-		exit 1
+		echo "warn: missing cargo-beta" >&2
+		"${build_rust}" beta cargo-install
 	fi
 
 	# llvm stuff
@@ -374,6 +372,12 @@ cargo-configure)
 		dep_dir="/usr/local"
 		ptarget="stable"
 
+		# install rustc-stable
+		if [[ ! -x "${dep_dir}/bin/rustc" ]]; then
+			log "installing rustc-stable (from ports)"
+			${SUDO} pkg_add -a rust
+		fi
+
 		# install cargo-stable
 		if [[ ! -x "${dep_dir}/bin/cargo" ]]; then
 			log "installing cargo-stable (from ports)"
@@ -387,8 +391,8 @@ cargo-configure)
 	esac
 
 	if [[ ! -x "${dep_dir}/bin/rustc" ]]; then
-		echo "error: cargo-${target} requires rustc-${ptarget}" >&2
-		exit 1
+		echo "warn: missing rustc-${ptarget}" >&2
+		"${build_rust}" "${ptarget}"
 	fi
 	
 	[[ ! -e "${cargo_xdir}" ]] \

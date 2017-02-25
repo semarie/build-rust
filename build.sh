@@ -382,11 +382,12 @@ cargo-build)
 	cd "${cargo_xdir}" && exec gmake "$@"
 	;;
 cargo-install)
-	[[ ! -d "${cargo_xdir}/target" ]] \
+	[[ ! -x "${cargo_xdir}/target/${triple_arch}/release/cargo" ]] \
 		&& "${build_rust}" "${target}" cargo-build
 
 	log "installing cargo-${target}"
-	cd "${cargo_xdir}" && exec gmake install
+	exec cp "${cargo_xdir}/target/${triple_arch}/release/cargo" \
+		"${install_dir}/${target}/bin/cargo"
 	;;
 cargo)	# install cargo for the target, if not already installed
 	[[ -x "${install_dir}/${target}/bin/cargo" ]] \

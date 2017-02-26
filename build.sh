@@ -280,7 +280,8 @@ build)	# invoke rustbuild for making dist files
 	# copy distfiles
 	log "copying ${target} distfiles to ${dist_dir}"
 	mkdir -p "${dist_dir}"
-	for _f in "${rustc_dir}"/build/dist/*-"${triple_arch}".tar.gz; do
+	for _c in rustc rust-std; do
+		_f="${rustc_dir}/build/dist/${_c}-${target}-${triple_arch}.tar.gz"
 		ln -f "${_f}" "${dist_dir}" \
 			|| cp -f "${_f}" "${dist_dir}"
 	done
@@ -290,12 +291,18 @@ install)	# install sets
 	# install rustc and rust-std sets
 	for _c in rustc rust-std; do
 		log "installing ${_c}-${target}"
-		tmpdir=`mktemp -d -p "${install_dir}" "rust-${target}.XXXXXX"` || exit 1
-		cd "${tmpdir}"
-		tar zxf "${rustc_dir}"/build/dist/${_c}-*-"${triple_arch}".tar.gz
-		./${_c}-*-"${triple_arch}"/install.sh \
+
+		if [[ ! -r "${dist_dir}/${_c}-${target}-${triple_arch}.tar.gz" ]]; then
+			echo "error: missing ${_c}-${target}-${triple_arch}.tar.gz" >&2
+			exit 1
+		fi
+
+		tmpdir=`mktemp -d -p "${install_dir}" "rust-${target}.XXXXXX"` \
+			|| exit 1
+		tar zxf "${dist_dir}/${_c}-${target}-${triple_arch}.tar.gz" \
+			-C "${tmpdir}"
+		"${tmpdir}/${_c}-${target}-${triple_arch}/install.sh" \
 			--prefix="${install_dir}/${target}"
-		cd ..
 		rm -rf -- "${tmpdir}"
 	done
 

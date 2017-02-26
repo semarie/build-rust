@@ -165,7 +165,7 @@ patch)	# apply local patches
 		| patch -d "${rustc_xdir}" -p0 -E
 	;;
 rustbuild)	# rustbuild wrapper
-	[[ ! -r "${rustc_dir}/.configure-${target}" ]] \
+	[[ ! -r "${rustc_xdir}/.configure-${target}" ]] \
 		&& "${build_rust}" "${target}" configure
 
 	log "starting rustbuild ${@}"
@@ -177,8 +177,9 @@ rustbuild)	# rustbuild wrapper
 			"$@"
 	;;
 clean)	# run rustbuild clean (do not remove llvm)
-	[[ ! -d "${rustc_dir}/build" || ! -e "${rustc_dir}/.configure-${target}" ]] \
-		&& exit 0
+	[[ ! -d "${rustc_dir}/build" \
+		|| ! -r "${rustc_xdir}/.configure-${target}" \
+		]] && exit 0
 
 	exec "${build_rust}" "${target}" rustbuild clean
 	;;
@@ -269,7 +270,7 @@ ${_llvm} = "${llvm_config}"
 static-libstdcpp = false
 ninja = true
 EOF
-	touch "${rustc_dir}/.configure-${target}"
+	exec touch "${rustc_xdir}/.configure-${target}"
 	;;
 build)	# invoke rustbuild for making dist files
 

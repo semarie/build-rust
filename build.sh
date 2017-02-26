@@ -320,6 +320,7 @@ install)	# install sets
 	# XXX copy system lib ?
 	;;
 beta|nightly)	# prepare a release
+	mkdir -p "${install_dir}/${target}"
 	(
 	"${build_rust}" "${target}" clean
 	"${build_rust}" "${target}" extract

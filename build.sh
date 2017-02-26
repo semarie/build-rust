@@ -318,6 +318,7 @@ install)	# install sets
 	# XXX copy system lib ?
 	;;
 beta|nightly)	# prepare a release
+	(
 	"${build_rust}" "${target}" clean
 	"${build_rust}" "${target}" extract
 	"${build_rust}" "${target}" patch
@@ -325,6 +326,7 @@ beta|nightly)	# prepare a release
 	"${build_rust}" "${target}" configure
 	"${build_rust}" "${target}" build
 	"${build_rust}" "${target}" install
+	) 2>&1 | tee "${install_dir}/${target}/build.log"
 	;;
 cargo-fetch)
 	# get cargo version required by rustc

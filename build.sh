@@ -438,14 +438,17 @@ run-rustc)
 		echo "error: missing rustc-${target}" >&2
 		exit 1
 	fi
-	exec "${install_dir}/${target}/bin/rustc" "${@}"
+	exec env PATH="${install_dir}/${target}/bin:${PATH}" \
+		"${install_dir}/${target}/bin/rustc" "${@}"
 	;;
 run-cargo)
 	if [[ ! -x "${install_dir}/${target}/bin/cargo" ]]; then
 		echo "error: missing cargo-${target}" >&2
 		exit 1
 	fi
-	exec "${install_dir}/${target}/bin/cargo" "${@}"
+	exec env PATH="${install_dir}/${target}/bin:${PATH}" \
+		RUSTC="${install_dir}/${target}/bin/rustc" \
+		"${install_dir}/${target}/bin/cargo" "${@}"
 	;;
 *)
 	echo "error: unknown command: see $0 help"

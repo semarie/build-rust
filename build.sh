@@ -144,9 +144,9 @@ extract)	# extract rust version from dist_dir to rustc_dir
 	[[ ! -r "${dist_dir}/rust-src-${target}.tar.gz" ]] && \
 		"${build_rust}" "${target}" fetch
 
-	if [[ -d "${rustc_dir}" ]]; then
-		log "removing ${rustc_dir}"
-		rm -rf -- "${rustc_dir}"
+	if [[ -d "${rustc_dir}/rust-src-${target}" ]]; then
+		log "removing ${rustc_dir}/rust-src-${target}"
+		rm -rf -- "${rustc_dir}/rust-src-${target}"
 	fi
 	mkdir -p -- "${rustc_dir}"
 

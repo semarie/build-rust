@@ -255,6 +255,9 @@ prefix = "${install_dir}/${target}"
 docs = false
 vendor = true
 
+[dist]
+src-tarball = false
+
 [rust]
 channel = "${target}"
 codegen-tests = false

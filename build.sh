@@ -429,6 +429,20 @@ cargo)	# install cargo for the target, if not already installed
 
 	"${build_rust}" "${target}" cargo-install
 	;;
+run-rustc)
+	if [[ ! -x "${install_dir}/${target}/bin/rustc" ]]; then
+		echo "error: missing rustc-${target}" >&2
+		exit 1
+	fi
+	exec "${install_dir}/${target}/bin/rustc" "${@}"
+	;;
+run-cargo)
+	if [[ ! -x "${install_dir}/${target}/bin/cargo" ]]; then
+		echo "error: missing cargo-${target}" >&2
+		exit 1
+	fi
+	exec "${install_dir}/${target}/bin/cargo" "${@}"
+	;;
 *)
 	echo "error: unknown command: see $0 help"
 	exit 1

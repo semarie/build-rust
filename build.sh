@@ -210,7 +210,6 @@ configure)	# configure target
 	case "${target}" in
 	beta)
 		dep_dir="/usr/local"
-		channel="beta"
 
 		# install rustc-stable
 		if [[ ! -x "${dep_dir}/bin/rustc" ]]; then
@@ -220,7 +219,6 @@ configure)	# configure target
 		;;
 	nightly)
 		dep_dir="${install_dir}/beta"
-		channel="dev"
 
 		# install rustc-beta
 		if [[ ! -x "${dep_dir}/bin/rustc" ]] ; then
@@ -258,7 +256,7 @@ docs = false
 vendor = true
 
 [rust]
-channel = "${channel}"
+channel = "${target}"
 codegen-tests = false
 
 [target.${triple_arch}]

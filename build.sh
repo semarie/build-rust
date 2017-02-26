@@ -233,8 +233,8 @@ configure)	# configure target
 
 	# require cargo-${target}
 	if [[ ! -x "${install_dir}/${target}/bin/cargo" ]] ; then
-		echo "warn: missing cargo-beta" >&2
-		"${build_rust}" beta cargo-install
+		echo "warn: missing cargo-${target}" >&2
+		"${build_rust}" "${target}" cargo-install
 	fi
 
 	# require source tree

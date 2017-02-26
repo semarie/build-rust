@@ -97,6 +97,8 @@ help)
 	sed -ne 's/^\([a-z].*\))	*# \(.*\)$/ - \1:	\2/p' <$0
 	exit 0
 	;;
+init)
+	;;
 *)
 	echo "error: invalid target" >&2
 	exit 1

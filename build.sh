@@ -469,6 +469,7 @@ cargo)	# install cargo for the target, if not already installed
 		]] \
 		&& exit 0
 
+	"${build_rust}" "${target}" cargo-extract
 	"${build_rust}" "${target}" cargo-install
 	;;
 run-rustc)

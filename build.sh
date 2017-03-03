@@ -90,7 +90,7 @@ refetch() {
 
 	# refetch only if ETag changed
 	if [[ ! -e "${file}" || \
-		-z "${new_etag}" \
+		-z "${new_etag}" || \
 		! -e "${file}.etag" || \
 		$(cat "${file}.etag") != "${new_etag}" \
 		]]; then

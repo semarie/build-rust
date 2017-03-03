@@ -86,7 +86,7 @@ refetch() {
 	local file="$2"
 
 	# get ETag of remote file
-	local new_etag=$(curl -s -I "${url}" | sed -ne 's/etag: //p')
+	local new_etag=$(curl -s -L -I "${url}" | sed -ne 's/etag: //p')
 
 	# refetch only if ETag changed
 	if [[ ! -e "${file}" || \
@@ -94,7 +94,7 @@ refetch() {
 		$(cat "${file}.etag") != "${new_etag}" \
 		]]; then
 
-		curl -o "${file}" "${url}"
+		curl -L -o "${file}" "${url}"
 	fi
 
 	# save the new ETag

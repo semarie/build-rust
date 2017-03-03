@@ -458,7 +458,14 @@ cargo-install)
 		"${install_dir}/${target}/bin/cargo"
 	;;
 cargo)	# install cargo for the target, if not already installed
-	[[ -x "${install_dir}/${target}/bin/cargo" ]] \
+	# fetch cargo
+	"${build_rust}" "${target}" cargo-fetch
+
+	# check cargo binary existence and compare date with downloaded archive
+	[[ -x "${install_dir}/${target}/bin/cargo" && \
+		"${install_dir}/${target}/bin/cargo" \
+			-nt "${dist_dir}/cargo-${target}.tar.gz" \
+		]] \
 		&& exit 0
 
 	"${build_rust}" "${target}" cargo-install

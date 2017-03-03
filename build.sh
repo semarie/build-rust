@@ -81,6 +81,26 @@ log() {
 	echo "`date`: ${@}"
 }
 
+refetch() {
+	local url="$1"
+	local file="$2"
+
+	# get ETag of remote file
+	local new_etag=$(curl -s -I "${url}" | sed -ne 's/etag: //p')
+
+	# refetch only if ETag changed
+	if [[ ! -e "${file}" || \
+		! -e "${file}.etag" || \
+		$(cat "${file}.etag") != "${new_etag}" \
+		]]; then
+
+		curl -o "${file}" "${url}"
+	fi
+
+	# save the new ETag
+	echo "${new_etag}" > "${file}.etag"
+}
+
 # get target and check it
 target="$1"
 shift
@@ -132,19 +152,18 @@ init)	# install some required packages (using pkg_add)
 	fi
 
 	exec ${SUDO} pkg_add -a 'python%2.7' 'gmake' 'g++%4.9' 'git' \
+		'curl' \
 		${_ccache} \
 		${_llvm}
 	;;
 fetch)	# fetch latest rust version
 	log "fetching ${distfiles_rustc_base}/rust-src-${target}.tar.gz"
-
 	mkdir -p -- "${dist_dir}"
-	exec ftp -o "${dist_dir}/rust-src-${target}.tar.gz" \
-		"${distfiles_rustc_base}/rust-src-${target}.tar.gz"
+	refetch "${distfiles_rustc_base}/rust-src-${target}.tar.gz"\
+		"${dist_dir}/rust-src-${target}.tar.gz" \
 	;;
 extract)	# extract rust version from dist_dir to rustc_dir
-	[[ ! -r "${dist_dir}/rust-src-${target}.tar.gz" ]] && \
-		"${build_rust}" "${target}" fetch
+	"${build_rust}" "${target}" fetch
 
 	if [[ -d "${rustc_dir}/rust-src-${target}" ]]; then
 		log "removing ${rustc_dir}/rust-src-${target}"
@@ -338,12 +357,11 @@ cargo-fetch)
 	commitid=$(sed -ne 's/^cargo: *//p' "${rustc_xdir}/src/stage0.txt")
 
 	log "fetching cargo-${target} ${commitid}"
-	exec ftp -o "${dist_dir}/cargo-${target}.tar.gz" \
-		"${distfiles_cargo_base}/${commitid}.tar.gz"
+	refetch "${distfiles_cargo_base}/${commitid}.tar.gz" \
+		"${dist_dir}/cargo-${target}.tar.gz"
 	;;
 cargo-extract)
-	[[ ! -r "${dist_dir}/cargo-${target}.tar.gz" ]] \
-		&& "${build_rust}" "${target}" cargo-fetch
+	"${build_rust}" "${target}" cargo-fetch
 
 	# get cargo version required by rustc
 	[[ ! -r "${rustc_xdir}/src/stage0.txt" ]] \

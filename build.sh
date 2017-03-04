@@ -345,6 +345,18 @@ install)	# install sets
 	;;
 beta|nightly)	# prepare a release
 	mkdir -p "${install_dir}/${target}"
+
+	"${build_rust}" "${target}" fetch
+
+	if [[ -x "${install_dir}/${target}/bin/rustc" && \
+		-r "${dist_dir}/rust-src-${target}.tar.gz" && \
+		"${install_dir}/${target}/bin/rustc" -nt \
+			"${dist_dir}/rust-src-${target}.tar.gz" ]]; then
+
+		log "already up-to-date: ${target}"
+		exit 0
+	fi
+
 	(
 	"${build_rust}" "${target}" clean
 	"${build_rust}" "${target}" extract

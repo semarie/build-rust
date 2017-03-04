@@ -247,11 +247,8 @@ configure)	# configure target
 	nightly)
 		dep_dir="${install_dir}/beta"
 
-		# install rustc-beta
-		if [[ ! -x "${dep_dir}/bin/rustc" ]] ; then
-			echo "warn: missing rustc-beta" >&2
-			"${build_rust}" beta
-		fi
+		# install rustc-beta (will rebuild only if needed)
+		"${build_rust}" beta
 		;;
 	esac
 

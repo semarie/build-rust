@@ -82,8 +82,9 @@ log() {
 }
 
 refetch() {
-	local url="$1"
-	local file="$2"
+	local message="$1"
+	local url="$2"
+	local file="$3"
 
 	# get ETag of remote file
 	local new_etag=$(curl -s -L -I "${url}" | sed -ne 's/[Ee][Tt]ag: //p')
@@ -95,7 +96,10 @@ refetch() {
 		$(cat "${file}.etag") != "${new_etag}" \
 		]]; then
 
+		log "fetching (cache miss): ${message}"
 		curl -L -o "${file}" "${url}"
+	else
+		log "fetching (cache hit): ${message}"
 	fi
 
 	# save the new ETag
@@ -158,9 +162,9 @@ init)	# install some required packages (using pkg_add)
 		${_llvm}
 	;;
 fetch)	# fetch latest rust version
-	log "fetching ${distfiles_rustc_base}/rust-src-${target}.tar.gz"
 	mkdir -p -- "${dist_dir}"
-	refetch "${distfiles_rustc_base}/rust-src-${target}.tar.gz"\
+	refetch "rust-src-${target}.tar.gz" \
+		"${distfiles_rustc_base}/rust-src-${target}.tar.gz" \
 		"${dist_dir}/rust-src-${target}.tar.gz" \
 	;;
 extract)	# extract rust version from dist_dir to rustc_dir
@@ -357,8 +361,8 @@ cargo-fetch)
 		&& "${build_rust}" "${target}" patch
 	commitid=$(sed -ne 's/^cargo: *//p' "${rustc_xdir}/src/stage0.txt")
 
-	log "fetching cargo-${target} ${commitid}"
-	refetch "${distfiles_cargo_base}/${commitid}.tar.gz" \
+	refetch "cargo-${target} ${commitid}" \
+		"${distfiles_cargo_base}/${commitid}.tar.gz" \
 		"${dist_dir}/cargo-${target}.tar.gz"
 	;;
 cargo-extract)

@@ -13,7 +13,7 @@ each stage.
 First:
 
 ```
-$ ./build init
+$ ./build.sh init
 ```
 
 This step uses `doas(1)` to install some packages. Please read the script to

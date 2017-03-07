@@ -23,7 +23,7 @@ Next:
 $ ./build.sh init
 ```
 
-This step uses the SUDO command you chose in the first step to install some
+This step uses the `SUDO` command you chose in the first step to install some
 packages. Please read the script to ensure you are happy with the commands that
 will be run as root.
 
@@ -58,6 +58,12 @@ $ cargo install cargo
 ```
 
 If you want that as your default cargo, don't forget to add it to the `PATH`.
+
+## Why do we Need this Script?
+
+Why not just use `rustup`? In short, OpenBSD has tier 3 Rust support, meaning
+that the rust upstream does not make binaries available via `rustup`. There are
+a couple of reasons for this.
 
 ### Reason 1: Cross compiling.
 

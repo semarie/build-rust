@@ -10,7 +10,8 @@ each stage.
 
 ## Quick Start
 
-First:
+First, choose a program to allow build-rust to be root. You usually want either
+`doas` or `sudo`. E.g.:
 
 ```
 echo "SUDO=doas" > ~/.build_rust.conf
@@ -22,8 +23,9 @@ Next:
 $ ./build.sh init
 ```
 
-This step uses `doas(1)` to install some packages. Please read the script to
-ensure you are happy with the commands that will be run as root.
+This step uses the SUDO command you chose in the first step to install some
+packages. Please read the script to ensure you are happy with the commands that
+will be run as root.
 
 Now run:
 ```
@@ -32,8 +34,6 @@ $ ./build <target>
 
 Where `<target>` is either `beta` or `nightly`. If you choose `nightly` but
 have not yet built  `beta`, then `beta` will be built first automatically.
-
-(Note that `sh build.sh ...` will not work. You must use `./build.sh ...`)
 
 Once this is done you will have a working rust environment (including cargo) in
 `install_dir/<target>`. If you want this to be your default rustc and cargo,
@@ -59,46 +59,12 @@ $ cargo install cargo
 
 If you want that as your default cargo, don't forget to add it to the `PATH`.
 
-## I get an Error About Linking -lstdc++ Failing.
-
-E.g.
-```
-error: linking with `cc` failed: exit code: 1
-  |
-  = note: "cc" "-Wl,--as-needed" "-Wl,-z,noexecstack" ...
-...
-  = note: /usr/bin/ld: cannot find -lestdc++
-          collect2: ld returned 1 exit status
-
-error: aborting due to previous error
-```
-
-Some parts of the rust standard library (notably the compiler plugin APIs) link
-`libestdc++`, however generally speaking, this is not a strict dependency for
-all rust programs.
-
-If you encounter this error, you probably want to use `eg++` as the linker
-instead of the base `g++`. A convenient way to do this is to have your project
-use `eg++` if the host system is OpenBSD. For example, for an amd64 system, add
-in `.cargo/config`:
-
-```
-[target.x86_64-unknown-openbsd]
-linker = "eg++"
-```
-
-## Why is this Script Needed?
-
 ### Reason 1: Cross compiling.
 
 Under normal circumstances, rust upstream would cross compile beta and nightly
 rust on their Linux machines, making the resulting binaries available via
-`rustup`. However, OpenBSD has a modified linker meaning that cross compiled
-binaries do not run.
-
-There are ongoing efforts to use clang/LLVM as OpenBSD's base compiler and
-linker. It is hoped that the linker customisations required will be pushed
-upstream so cross compiling to OpenBSD becomes easier.
+`rustup`. However, OpenBSD has a modified linker meaning that targeting OpenBSD
+with a cross compiler is not straightforward.
 
 ### Reason 2: No Backward Compatibility
 

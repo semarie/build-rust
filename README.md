@@ -13,6 +13,12 @@ each stage.
 First:
 
 ```
+echo "SUDO=doas" > ~/.build_rust.conf
+```
+
+Next:
+
+```
 $ ./build.sh init
 ```
 

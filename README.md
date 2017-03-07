@@ -29,7 +29,7 @@ will be run as root.
 
 Now run:
 ```
-$ ./build <target>
+$ ./build.sh <target>
 ```
 
 Where `<target>` is either `beta` or `nightly`. If you choose `nightly` but
@@ -39,9 +39,6 @@ Once this is done you will have a working Rust environment (including cargo) in
 `install_dir/<target>`. If you want this to be your default rustc and cargo,
 then you probably want to add `install_dir/<target>/bin` to your `PATH` in your
 shell rc.
-
-Rust encodes an rpath by default, so you should *not* have to set an
-`LD_LIBRARY_PATH`.
 
 ## Why is the Installed Cargo Old?
 

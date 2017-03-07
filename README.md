@@ -1,11 +1,11 @@
 # build-rust
 
-build-rust is a shell script for getting a rust beta or nightly running on
+build-rust is a shell script for getting a Rust beta or nightly running on
 OpenBSD.
 
-The script works by using the stable rust from the OpenBSD package repo to
-build a beta rust, then (if you want a nightly) it uses this beta rust to build
-a nightly rust. It also deals with ensuring the right cargo version is used at
+The script works by using the stable Rust from the OpenBSD package repo to
+build a beta Rust, then (if you want a nightly) it uses this beta Rust to build
+a nightly Rust. It also deals with ensuring the right cargo version is used at
 each stage.
 
 ## Quick Start
@@ -35,12 +35,12 @@ $ ./build <target>
 Where `<target>` is either `beta` or `nightly`. If you choose `nightly` but
 have not yet built  `beta`, then `beta` will be built first automatically.
 
-Once this is done you will have a working rust environment (including cargo) in
+Once this is done you will have a working Rust environment (including cargo) in
 `install_dir/<target>`. If you want this to be your default rustc and cargo,
 then you probably want to add `install_dir/<target>/bin` to your `PATH` in your
 shell rc.
 
-rust encodes an rpath by default, so you should *not* have to set an
+Rust encodes an rpath by default, so you should *not* have to set an
 `LD_LIBRARY_PATH`.
 
 ## Why is the Installed Cargo Old?
@@ -62,13 +62,13 @@ If you want that as your default cargo, don't forget to add it to the `PATH`.
 ## Why do we Need this Script?
 
 Why not just use `rustup`? In short, OpenBSD has tier 3 Rust support, meaning
-that the rust upstream does not make binaries available via `rustup`. There are
+that the Rust upstream does not make binaries available via `rustup`. There are
 a couple of reasons for this.
 
 ### Reason 1: Cross compiling.
 
-Under normal circumstances, rust upstream would cross compile beta and nightly
-rust on their Linux machines, making the resulting binaries available via
+Under normal circumstances, Rust upstream would cross compile beta and nightly
+Rust on their Linux machines, making the resulting binaries available via
 `rustup`. However, OpenBSD has a modified linker meaning that targeting OpenBSD
 with a cross compiler is not straightforward.
 

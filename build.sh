@@ -409,6 +409,11 @@ cargo-patch)
 			-p openssl -p openssl-sys
 		;;
 	nightly)
+		if [[ ! -x "${install_dir}/beta/bin/cargo" ]]; then
+			echo "warn: missing cargo-beta" >&2
+			"${build_rust}" beta cargo
+		fi
+
 		cd "${cargo_xdir}" && exec "${install_dir}/beta/bin/cargo" update \
 			-p libc \
 			-p openssl -p openssl-sys

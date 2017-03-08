@@ -413,6 +413,8 @@ cargo-patch)
 		if [[ ! -x "${install_dir}/beta/bin/cargo" ]]; then
 			echo "warn: missing cargo-beta" >&2
 			"${build_rust}" beta cargo
+
+			exec "${build_rust}" nightly cargo-patch
 		fi
 
 		cd "${cargo_xdir}" && exec "${install_dir}/beta/bin/cargo" update \

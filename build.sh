@@ -345,7 +345,8 @@ beta|nightly)	# prepare a release
 
 	"${build_rust}" "${target}" fetch
 
-	if [[ -x "${install_dir}/${target}/bin/rustc" && \
+	if [[ -z "${REBUILD:-}" && \
+		-x "${install_dir}/${target}/bin/rustc" && \
 		-r "${dist_dir}/rust-src-${target}.tar.gz" && \
 		"${install_dir}/${target}/bin/rustc" -nt \
 			"${dist_dir}/rust-src-${target}.tar.gz" ]]; then

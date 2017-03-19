@@ -37,7 +37,7 @@ build_dir="${build_dir:-build_dir}"
 install_dir="${install_dir:-install_dir}"
 SUDO="${SUDO:-}"
 ccache="${ccache:-yes}"
-llvm_config="${llvm_config:-}"
+llvm_config="${llvm_config:-/usr/local/bin/llvm-config}"
 CFLAGS="${CFLAGS:--O2 -pipe}"
 
 def_MAKE_JOBS=$(sysctl -n hw.ncpu)

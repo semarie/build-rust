@@ -147,7 +147,7 @@ init)	# install some required packages (using pkg_add)
 	if [[ -n ${llvm_config} ]]; then
 		_llvm='llvm'
 	else
-		_llvm='cmake ninja'
+		_llvm='ninja'
 	fi
 
 	if [[ ${ccache} != "yes" ]]; then
@@ -157,7 +157,7 @@ init)	# install some required packages (using pkg_add)
 	fi
 
 	exec ${SUDO} pkg_add -a 'python%2.7' 'gmake' 'g++%4.9' 'git' \
-		'curl' \
+		'curl' 'cmake' \
 		${_ccache} \
 		${_llvm}
 	;;

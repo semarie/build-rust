@@ -376,24 +376,31 @@ cargo-fetch)
 		"${dist_dir}/cargo-${target}.tar.gz"
 	;;
 cargo-extract)
-	"${build_rust}" "${target}" cargo-fetch
 
-	# get cargo version required by rustc
-	[[ ! -r "${rustc_xdir}/src/stage0.txt" ]] \
-		&& "${build_rust}" "${target}" patch
-	commitid=$(sed -ne 's/^cargo: *//p' "${rustc_xdir}/src/stage0.txt")
+	if [[ "${target}" == "beta" ]]; then
 
-	if [[ -d "${cargo_dir}" ]]; then
-		log "removing ${cargo_dir}"
-		rm -rf -- "${cargo_dir}"
+		"${build_rust}" "${target}" cargo-fetch
+
+		# get cargo version required by rustc
+		[[ ! -r "${rustc_xdir}/src/stage0.txt" ]] \
+			&& "${build_rust}" "${target}" patch
+		commitid=$(sed -ne 's/^cargo: *//p' "${rustc_xdir}/src/stage0.txt")
+
+		if [[ -d "${cargo_dir}" ]]; then
+			log "removing ${cargo_dir}"
+			rm -rf -- "${cargo_dir}"
+		fi
+		mkdir -p -- "${cargo_dir}"
+
+		log "extracting cargo-${target} ${commitid}"
+		tar zxf "${dist_dir}/cargo-${target}.tar.gz" \
+			-C "${cargo_dir}"
+
+		exec ln -fs "cargo-${commitid}" "${cargo_dir}/cargo-${target}"
 	fi
-	mkdir -p -- "${cargo_dir}"
 
-	log "extracting cargo-${target} ${commitid}"
-	tar zxf "${dist_dir}/cargo-${target}.tar.gz" \
-		-C "${cargo_dir}"
-
-	exec ln -fs "cargo-${commitid}" "${cargo_dir}/cargo-${target}"
+	mkdir -p "${cargo_dir}"
+	ln -fs "${rustc_xdir}/cargo" "${cargo_xdir}"
 	;;
 cargo-patch)
 	[[ ! -e "${cargo_xdir}" ]] \

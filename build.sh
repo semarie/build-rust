@@ -157,7 +157,7 @@ init)	# install some required packages (using pkg_add)
 	fi
 
 	exec ${SUDO} pkg_add -a 'python%2.7' 'gmake' 'g++%4.9' 'git' \
-		'curl' 'cmake' \
+		'curl' 'cmake' 'ccache' \
 		${_ccache} \
 		${_llvm}
 	;;

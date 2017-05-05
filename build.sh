@@ -32,7 +32,6 @@ fi
 
 # default variables
 distfiles_rustc_base="${distfiles_rustc_base:-https://static.rust-lang.org/dist}"
-distfiles_cargo_base="${distfiles_cargo_base:-https://github.com/rust-lang/cargo/archive}"
 build_dir="${build_dir:-build_dir}"
 install_dir="${install_dir:-install_dir}"
 SUDO="${SUDO:-}"
@@ -47,7 +46,6 @@ MAKE_JOBS=${MAKE_JOBS:-${def_MAKE_JOBS}}
 dist_dir="${install_dir}/dist"
 crates_dir="${install_dir}/crates"
 rustc_dir="${build_dir}/rustc"
-cargo_dir="${build_dir}/cargo"
 
 # use canonicalize version
 mkdir -p "${install_dir}" "${build_dir}"
@@ -55,7 +53,6 @@ build_dir=$(readlink -fn "${build_dir}")
 install_dir=$(readlink -fn "${install_dir}")
 dist_dir=$(readlink -fn "${dist_dir}")
 rustc_dir=$(readlink -fn "${rustc_dir}")
-cargo_dir=$(readlink -fn "${cargo_dir}")
 crates_dir=$(readlink -fn "${crates_dir}")
 
 # cargo configuration
@@ -131,7 +128,7 @@ esac
 
 # source dir
 rustc_xdir="${rustc_dir}/rust-src-${target}/rust-src/lib/rustlib/src/rust"
-cargo_xdir="${cargo_dir}/cargo-${target}"
+cargo_xdir="${rustc_dir}/rust-src-${target}/rust-src/lib/rustlib/src/rust/cargo"
 
 # get command
 if [[ $# -eq 0 ]]; then
@@ -365,70 +362,6 @@ beta|nightly)	# prepare a release
 	"${build_rust}" "${target}" install
 	) 2>&1 | tee "${install_dir}/${target}/build.log"
 	;;
-cargo-fetch)
-	# get cargo version required by rustc
-	[[ ! -r "${rustc_xdir}/src/stage0.txt" ]] \
-		&& "${build_rust}" "${target}" patch
-	commitid=$(sed -ne 's/^cargo: *//p' "${rustc_xdir}/src/stage0.txt")
-
-	refetch "cargo-${target} ${commitid}" \
-		"${distfiles_cargo_base}/${commitid}.tar.gz" \
-		"${dist_dir}/cargo-${target}.tar.gz"
-	;;
-cargo-extract)
-
-	if [[ "${target}" == "beta" ]]; then
-
-		"${build_rust}" "${target}" cargo-fetch
-
-		# get cargo version required by rustc
-		[[ ! -r "${rustc_xdir}/src/stage0.txt" ]] \
-			&& "${build_rust}" "${target}" patch
-		commitid=$(sed -ne 's/^cargo: *//p' "${rustc_xdir}/src/stage0.txt")
-
-		if [[ -d "${cargo_dir}" ]]; then
-			log "removing ${cargo_dir}"
-			rm -rf -- "${cargo_dir}"
-		fi
-		mkdir -p -- "${cargo_dir}"
-
-		log "extracting cargo-${target} ${commitid}"
-		tar zxf "${dist_dir}/cargo-${target}.tar.gz" \
-			-C "${cargo_dir}"
-
-		exec ln -fs "cargo-${commitid}" "${cargo_dir}/cargo-${target}"
-	fi
-
-	mkdir -p "${cargo_dir}"
-	ln -fs "${rustc_xdir}/cargo" "${cargo_xdir}"
-	;;
-cargo-patch)
-	[[ ! -e "${cargo_xdir}" ]] \
-		&& "${build_rust}" "${target}" cargo-extract
-
-	# >= libc-0.2.19 : support of OpenBSD i386
-	# >= openssl-0.9.4 : support of LibreSSL
-
-	log "patching cargo-${target}"
-	case "${target}" in
-	beta)
-		cd "${cargo_xdir}" && exec /usr/local/bin/cargo update \
-			-p libc \
-			-p openssl -p openssl-sys
-		;;
-	nightly)
-		if [[ ! -x "${install_dir}/beta/bin/cargo" ]]; then
-			echo "warn: missing cargo-beta" >&2
-			"${build_rust}" beta cargo
-
-			exec "${build_rust}" nightly cargo-patch
-		fi
-
-		cd "${cargo_xdir}" && exec "${install_dir}/beta/bin/cargo" update \
-			-p libc \
-			-p openssl -p openssl-sys
-	esac
-	;;
 cargo-configure)
 	"${build_rust}" "${target}" pre-configure
 
@@ -460,9 +393,6 @@ cargo-configure)
 		"${build_rust}" "${ptarget}"
 	fi
 
-	[[ ! -e "${cargo_xdir}" ]] \
-		&& "${build_rust}" "${target}" cargo-patch
-
 	log "configuring cargo-${target}"
 	cd "${cargo_xdir}" && exec env \
 		PATH="${build_dir}/bin:${dep_dir}/bin:${PATH}" \
@@ -487,8 +417,6 @@ cargo-install)
 		"${install_dir}/${target}/bin/cargo"
 	;;
 cargo)	# install cargo for the target, if not already installed
-	# fetch cargo
-	"${build_rust}" "${target}" cargo-fetch
 
 	# check cargo binary existence and compare date with downloaded archive
 	[[ -x "${install_dir}/${target}/bin/cargo" && \
@@ -497,7 +425,6 @@ cargo)	# install cargo for the target, if not already installed
 		]] \
 		&& exit 0
 
-	"${build_rust}" "${target}" cargo-patch
 	"${build_rust}" "${target}" cargo-install
 	;;
 run-rustc)

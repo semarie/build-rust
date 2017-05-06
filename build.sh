@@ -160,7 +160,7 @@ init)	# install some required packages (using pkg_add)
 	;;
 fetch)	# fetch latest rust version
 	mkdir -p -- "${dist_dir}"
-	refetch "rust-src-${target}.tar.gz" \
+	refetch "rustc-${target}-src.tar.gz" \
 		"${distfiles_rustc_base}/rustc-${target}-src.tar.gz" \
 		"${dist_dir}/rustc-${target}-src.tar.gz" \
 	;;
@@ -344,9 +344,9 @@ beta|nightly)	# prepare a release
 
 	if [[ -z "${REBUILD:-}" && \
 		-x "${install_dir}/${target}/bin/rustc" && \
-		-r "${dist_dir}/rust-src-${target}.tar.gz" && \
+		-r "${dist_dir}/rustc-${target}-src.tar.gz" && \
 		"${install_dir}/${target}/bin/rustc" -nt \
-			"${dist_dir}/rust-src-${target}.tar.gz" ]]; then
+			"${dist_dir}/rustc-${target}-src.tar.gz" ]]; then
 
 		log "already up-to-date: ${target}"
 		exit 0

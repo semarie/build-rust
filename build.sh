@@ -127,8 +127,8 @@ init)
 esac
 
 # source dir
-rustc_xdir="${rustc_dir}/rust-src-${target}/rust-src/lib/rustlib/src/rust"
-cargo_xdir="${rustc_dir}/rust-src-${target}/rust-src/lib/rustlib/src/rust/cargo"
+rustc_xdir="${rustc_dir}/rustc-${target}-src"
+cargo_xdir="${rustc_xdir}/cargo"
 
 # get command
 if [[ $# -eq 0 ]]; then
@@ -161,20 +161,20 @@ init)	# install some required packages (using pkg_add)
 fetch)	# fetch latest rust version
 	mkdir -p -- "${dist_dir}"
 	refetch "rust-src-${target}.tar.gz" \
-		"${distfiles_rustc_base}/rust-src-${target}.tar.gz" \
-		"${dist_dir}/rust-src-${target}.tar.gz" \
+		"${distfiles_rustc_base}/rustc-${target}-src.tar.gz" \
+		"${dist_dir}/rustc-${target}-src.tar.gz" \
 	;;
 extract)	# extract rust version from dist_dir to rustc_dir
 	"${build_rust}" "${target}" fetch
 
-	if [[ -d "${rustc_dir}/rust-src-${target}" ]]; then
-		log "removing ${rustc_dir}/rust-src-${target}"
-		rm -rf -- "${rustc_dir}/rust-src-${target}"
+	if [[ -d "${rustc_dir}/rustc-${target}-src" ]]; then
+		log "removing ${rustc_dir}/rustc-${target}-src"
+		rm -rf -- "${rustc_dir}/rustc-${target}-src"
 	fi
 	mkdir -p -- "${rustc_dir}"
 
-	log "extracting rust-src-${target}.tar.gz"
-	exec tar zxf "${dist_dir}/rust-src-${target}.tar.gz" -C "${rustc_dir}"
+	log "extracting rustc-${target}-src.tar.gz"
+	exec tar zxf "${dist_dir}/rustc-${target}-src.tar.gz" -C "${rustc_dir}"
 	;;
 patch)	# apply local patches
 	[[ ! -d "${rustc_xdir}" ]] && \
@@ -240,6 +240,12 @@ configure)	# configure target
 			log "installing rustc-stable (from ports)"
 			${SUDO} pkg_add -a rust
 		fi
+
+		# install cargo-stable
+		if [[ ! -x "${dep_dir}/bin/cargo" ]]; then
+			log "installing cargo-stable (from ports)"
+			${SUDO} pkg_add -a cargo
+		fi
 		;;
 	nightly)
 		dep_dir="${install_dir}/beta"
@@ -248,12 +254,6 @@ configure)	# configure target
 		"${build_rust}" beta
 		;;
 	esac
-
-	# require cargo-${target}
-	if [[ ! -x "${install_dir}/${target}/bin/cargo" ]] ; then
-		echo "warn: missing cargo-${target}" >&2
-		"${build_rust}" "${target}" cargo-install
-	fi
 
 	# require source tree
 	[[ ! -r "${rustc_xdir}/src/bootstrap/bootstrap.py" ]] \
@@ -271,7 +271,7 @@ configure)	# configure target
 	cat >"${rustc_dir}/config.toml" <<EOF
 [build]
 rustc = "${dep_dir}/bin/rustc"
-cargo = "${install_dir}/${target}/bin/cargo"
+cargo = "${dep_dir}/bin/cargo"
 prefix = "${install_dir}/${target}"
 docs = false
 vendor = true
@@ -356,49 +356,31 @@ beta|nightly)	# prepare a release
 	"${build_rust}" "${target}" clean
 	"${build_rust}" "${target}" extract
 	"${build_rust}" "${target}" patch
-	"${build_rust}" "${target}" cargo
 	"${build_rust}" "${target}" configure
 	"${build_rust}" "${target}" build
 	"${build_rust}" "${target}" install
+	"${build_rust}" "${target}" cargo
 	) 2>&1 | tee "${install_dir}/${target}/build.log"
 	;;
 cargo-configure)
 	"${build_rust}" "${target}" pre-configure
 
-	case "${target}" in
-	beta)
-		dep_dir="/usr/local"
-		ptarget="stable"
-
-		# install rustc-stable
-		if [[ ! -x "${dep_dir}/bin/rustc" ]]; then
-			log "installing rustc-stable (from ports)"
-			${SUDO} pkg_add -a rust
-		fi
-
-		# install cargo-stable
-		if [[ ! -x "${dep_dir}/bin/cargo" ]]; then
-			log "installing cargo-stable (from ports)"
-			${SUDO} pkg_add -a cargo
-		fi
-		;;
-	nightly)
-		dep_dir="${install_dir}/beta"
-		ptarget="beta"
-		;;
-	esac
-
-	if [[ ! -x "${dep_dir}/bin/rustc" ]]; then
-		echo "warn: missing rustc-${ptarget}" >&2
-		"${build_rust}" "${ptarget}"
+	if [[ ! -x "${install_dir}/${target}/bin/rustc" ]] ; then
+		echo "error: rustc-${target} should be installed first" >&2
+		exit 1
 	fi
+
+	# remove cargo/.config from rustc build
+	[[ -e "${build_dir}/rustc/.cargo/config" ]] && \
+		rm -f "${build_dir}/rustc/.cargo/config"
 
 	log "configuring cargo-${target}"
 	cd "${cargo_xdir}" && exec env \
-		PATH="${build_dir}/bin:${dep_dir}/bin:${PATH}" \
+		PATH="${build_dir}/bin:${install_dir}/${target}/bin:${PATH}" \
 		./configure \
 			--prefix="${install_dir}/${target}" \
-			--rustc="${dep_dir}/bin/rustc"
+			--rustc="${install_dir}/${target}/bin/rustc" \
+			--release-channel="${target}"
 	;;
 cargo-build)
 	[[ ! -r "${cargo_xdir}/Makefile" ]] \
@@ -418,12 +400,8 @@ cargo-install)
 	;;
 cargo)	# install cargo for the target, if not already installed
 
-	# check cargo binary existence and compare date with downloaded archive
-	[[ -x "${install_dir}/${target}/bin/cargo" && \
-		"${install_dir}/${target}/bin/cargo" \
-			-nt "${dist_dir}/cargo-${target}.tar.gz" \
-		]] \
-		&& exit 0
+	# check source directory (not available on nightly)
+	[[ ! -d "${cargo_xdir}" ]] && exit 0
 
 	"${build_rust}" "${target}" cargo-install
 	;;

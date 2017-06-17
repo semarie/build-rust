@@ -128,7 +128,6 @@ esac
 
 # source dir
 rustc_xdir="${rustc_dir}/rustc-${target}-src"
-cargo_xdir="${rustc_xdir}/cargo"
 
 # get command
 if [[ $# -eq 0 ]]; then
@@ -296,11 +295,12 @@ build)	# invoke rustbuild for making dist files
 
 	# make build
 	"${build_rust}" "${target}" rustbuild dist --jobs=${MAKE_JOBS}
+	"${build_rust}" "${target}" rustbuild dist --jobs=${MAKE_JOBS} src/tools/cargo
 
 	# copy distfiles
 	log "copying ${target} distfiles to ${dist_dir}"
 	mkdir -p "${dist_dir}"
-	for _c in rustc rust-std; do
+	for _c in rustc rust-std cargo; do
 		_f="${rustc_dir}/build/dist/${_c}-${target}-${triple_arch}.tar.gz"
 		ln -f "${_f}" "${dist_dir}" \
 			|| cp -f "${_f}" "${dist_dir}"
@@ -309,7 +309,7 @@ build)	# invoke rustbuild for making dist files
 install)	# install sets
 
 	# install rustc and rust-std sets
-	for _c in rustc rust-std; do
+	for _c in rustc rust-std cargo; do
 		log "installing ${_c}-${target}"
 
 		if [[ ! -r "${dist_dir}/${_c}-${target}-${triple_arch}.tar.gz" ]]; then
@@ -359,51 +359,7 @@ beta|nightly)	# prepare a release
 	"${build_rust}" "${target}" configure
 	"${build_rust}" "${target}" build
 	"${build_rust}" "${target}" install
-	"${build_rust}" "${target}" cargo
 	) 2>&1 | tee "${install_dir}/${target}/build.log"
-	;;
-cargo-configure)
-	"${build_rust}" "${target}" pre-configure
-
-	if [[ ! -x "${install_dir}/${target}/bin/rustc" ]] ; then
-		echo "error: rustc-${target} should be installed first" >&2
-		exit 1
-	fi
-
-	# remove cargo/.config from rustc build
-	[[ -e "${build_dir}/rustc/.cargo/config" ]] && \
-		rm -f "${build_dir}/rustc/.cargo/config"
-
-	log "configuring cargo-${target}"
-	cd "${cargo_xdir}" && exec env \
-		PATH="${build_dir}/bin:${install_dir}/${target}/bin:${PATH}" \
-		./configure \
-			--prefix="${install_dir}/${target}" \
-			--rustc="${install_dir}/${target}/bin/rustc" \
-			--release-channel="${target}"
-	;;
-cargo-build)
-	[[ ! -r "${cargo_xdir}/Makefile" ]] \
-		&& "${build_rust}" "${target}" cargo-configure
-
-	log "building cargo-${target}"
-	cd "${cargo_xdir}" && exec gmake "$@"
-	;;
-cargo-install)
-	[[ ! -x "${cargo_xdir}/target/${triple_arch}/release/cargo" ]] \
-		&& "${build_rust}" "${target}" cargo-build
-
-	log "installing cargo-${target}"
-	mkdir -p -- "${install_dir}/${target}/bin"
-	exec cp "${cargo_xdir}/target/${triple_arch}/release/cargo" \
-		"${install_dir}/${target}/bin/cargo"
-	;;
-cargo)	# install cargo for the target, if not already installed
-
-	# check source directory (not available on nightly)
-	[[ ! -d "${cargo_xdir}" ]] && exit 0
-
-	"${build_rust}" "${target}" cargo-install
 	;;
 run-rustc)
 	if [[ ! -x "${install_dir}/${target}/bin/rustc" ]]; then

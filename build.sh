@@ -181,7 +181,7 @@ patch)	# apply local patches
 
 	log "patching ${target}"
 
-	## pass optimization flags: https://github.com/rust-lang/rust/issues/39900
+	## bootstrap: pass optimization flags: https://github.com/rust-lang/rust/issues/39900
 	echo 'patching: bootstrap: pass optimization flags'
 	sed -ie 's/.*|s| !s.starts_with("-O") && !s.starts_with("\/O").*//' "${rustc_xdir}/src/bootstrap/lib.rs"
 
@@ -189,6 +189,9 @@ patch)	# apply local patches
 	echo 'patching: openssl-sys: libressl in -current isn t explicitly supported'
 	sed -ie 's/^RUST_LIBRESSL_NEW$/RUST_LIBRESSL_254/' "${rustc_xdir}/src/vendor/openssl-sys/build.rs"
 	sed -ie 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/src/vendor/openssl-sys/.cargo-checksum.json"
+
+	## bootstrap: hack to permit --verbose build: https://github.com/rust-lang/rust/issues/41779
+	sed -ie 's/if matches.opt_present("verbose")/if false \&\& matches.opt_present("verbose")/' "${rustc_xdir}/src/bootstrap/flags.rs"
 
 	exit 0
 	;;
@@ -202,7 +205,7 @@ rustbuild)	# rustbuild wrapper
 	cd "${rustc_dir}" && exec env \
 		PATH="${build_dir}/bin:${PATH}" \
 		"python2.7" "${rustc_xdir}/src/bootstrap/bootstrap.py" \
-			"$@"
+			--verbose "$@"
 	;;
 clean)	# run rustbuild clean (do not remove llvm)
 	[[ ! -d "${rustc_dir}/build" \

@@ -181,10 +181,16 @@ patch)	# apply local patches
 
 	log "patching ${target}"
 
-	[[ ! -d "patches-${target}" ]] && exit 0
+	## pass optimization flags: https://github.com/rust-lang/rust/issues/39900
+	echo 'patching: bootstrap: pass optimization flags'
+	sed -ie 's/.*|s| !s.starts_with("-O") && !s.starts_with("\/O").*//' "${rustc_xdir}/src/bootstrap/lib.rs"
 
-	cat "patches-${target}"/*.patch \
-		| patch -d "${rustc_xdir}" -p0 -E
+
+
+
+
+
+	exit 0
 	;;
 rustbuild)	# rustbuild wrapper
 	[[ ! -r "${rustc_xdir}/.configure-${target}" ]] \

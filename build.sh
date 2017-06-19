@@ -185,10 +185,10 @@ patch)	# apply local patches
 	echo 'patching: bootstrap: pass optimization flags'
 	sed -ie 's/.*|s| !s.starts_with("-O") && !s.starts_with("\/O").*//' "${rustc_xdir}/src/bootstrap/lib.rs"
 
-
-
-
-
+	## openssl-sys: libressl in -current isn't explicitly supported
+	echo 'patching: openssl-sys: libressl in -current isn t explicitly supported'
+	sed -ie 's/^RUST_LIBRESSL_NEW$/RUST_LIBRESSL_254/' "${rustc_xdir}/src/vendor/openssl-sys/build.rs"
+	sed -ie 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/src/vendor/openssl-sys/.cargo-checksum.json"
 
 	exit 0
 	;;

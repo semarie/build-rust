@@ -190,9 +190,6 @@ patch)	# apply local patches
 	sed -ie 's/^RUST_LIBRESSL_NEW$/RUST_LIBRESSL_254/' "${rustc_xdir}/src/vendor/openssl-sys/build.rs"
 	sed -ie 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/src/vendor/openssl-sys/.cargo-checksum.json"
 
-	## bootstrap: hack to permit --verbose build: https://github.com/rust-lang/rust/issues/41779
-	sed -ie 's/if matches.opt_present("verbose")/if false \&\& matches.opt_present("verbose")/' "${rustc_xdir}/src/bootstrap/flags.rs"
-
 	exit 0
 	;;
 rustbuild)	# rustbuild wrapper

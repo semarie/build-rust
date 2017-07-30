@@ -264,6 +264,13 @@ configure)	# configure target
 	[[ ! -r "${rustc_xdir}/src/bootstrap/bootstrap.py" ]] \
 		&& "${build_rust}" "${target}" patch
 
+	# print information on current build
+	log "info: building: $(cat ${rustc_xdir}/version)"
+	log "info: rustc -vV"
+	"${dep_dir}/bin/rustc" -vV
+	log "info: cargo -vV"
+	"${dep_dir}/bin/cargo" -vV
+
 	# llvm stuff
 	if [[ -n ${llvm_config} ]]; then
 		_llvm='llvm-config'

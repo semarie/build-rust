@@ -201,8 +201,7 @@ rustbuild)	# rustbuild wrapper
 	ulimit -d `ulimit -dH`
 	cd "${rustc_dir}" && exec env \
 		PATH="${build_dir}/bin:${PATH}" \
-		"python2.7" "${rustc_xdir}/src/bootstrap/bootstrap.py" \
-			--verbose "$@"
+		"python2.7" "${rustc_xdir}/x.py" "$@"
 	;;
 clean)	# run rustbuild clean (do not remove llvm)
 	[[ ! -d "${rustc_dir}/build" \
@@ -261,7 +260,7 @@ configure)	# configure target
 	esac
 
 	# require source tree
-	[[ ! -r "${rustc_xdir}/src/bootstrap/bootstrap.py" ]] \
+	[[ ! -r "${rustc_xdir}/x.py" ]] \
 		&& "${build_rust}" "${target}" patch
 
 	# print information on current build
@@ -284,9 +283,14 @@ configure)	# configure target
 [build]
 rustc = "${dep_dir}/bin/rustc"
 cargo = "${dep_dir}/bin/cargo"
-prefix = "${install_dir}/${target}"
+python = "/usr/local/bin/python2.7"
 docs = false
 vendor = true
+extended = true
+verbose = 2
+
+[install]
+prefix = "${install_dir}/${target}"
 
 [dist]
 src-tarball = false
@@ -308,7 +312,6 @@ build)	# invoke rustbuild for making dist files
 
 	# make build
 	"${build_rust}" "${target}" rustbuild dist --jobs=${MAKE_JOBS}
-	"${build_rust}" "${target}" rustbuild dist --jobs=${MAKE_JOBS} src/tools/cargo
 
 	# copy distfiles
 	log "copying ${target} distfiles to ${dist_dir}"

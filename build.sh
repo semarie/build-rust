@@ -284,7 +284,7 @@ configure)	# configure target
 rustc = "${dep_dir}/bin/rustc"
 cargo = "${dep_dir}/bin/cargo"
 python = "/usr/local/bin/python2.7"
-docs = false
+#docs = false
 vendor = true
 extended = true
 verbose = 2
@@ -342,14 +342,20 @@ install)	# install sets
 		rm -rf -- "${tmpdir}"
 	done
 
-	# replace rustc by a wrapper (for LD_LIBRARY_PATH)
-	mv "${install_dir}/${target}/bin/rustc" \
-		"${install_dir}/${target}/bin/rustc.bin"
-	echo '#!/bin/sh' \
-		>"${install_dir}/${target}/bin/rustc"
-	echo "LD_LIBRARY_PATH='${install_dir}/${target}/lib' exec '${install_dir}/${target}/bin/rustc.bin' \"\$@\"" \
-		>>"${install_dir}/${target}/bin/rustc"
-	chmod 755 "${install_dir}/${target}/bin/rustc"
+	# replace binaries with a wrapper (for LD_LIBRARY_PATH)
+	for bin in rustc rustdoc cargo; do
+		mv "${install_dir}/${target}/bin/${bin}" \
+			"${install_dir}/${target}/bin/${bin}.bin"
+		echo '#!/bin/sh' \
+			>"${install_dir}/${target}/bin/${bin}"
+		echo "LD_LIBRARY_PATH='${install_dir}/${target}/lib' exec '${install_dir}/${target}/bin/${bin}.bin' \"\$@\"" \
+			>>"${install_dir}/${target}/bin/${bin}"
+		chmod 755 "${install_dir}/${target}/bin/${bin}"
+	done
+
+	# XXX let cc (aka clang) found libgcc.a
+	ln -fs $(env PATH="${build_dir}/bin:${PATH}" gcc -print-libgcc-file-name) \
+		"${install_dir}/${target}/lib/rustlib/${triple_arch}/lib"
 
 	# XXX copy system lib ?
 	;;

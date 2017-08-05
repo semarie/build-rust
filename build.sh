@@ -348,7 +348,7 @@ install)	# install sets
 			"${install_dir}/${target}/bin/${bin}.bin"
 		echo '#!/bin/sh' \
 			>"${install_dir}/${target}/bin/${bin}"
-		echo "LD_LIBRARY_PATH='${install_dir}/${target}/lib' exec '${install_dir}/${target}/bin/${bin}.bin' \"\$@\"" \
+		echo "LD_LIBRARY_PATH='${install_dir}/${target}/lib${LD_LIBRARY_PATH:+:}${LD_LIBRARY_PATH:-}' exec '${install_dir}/${target}/bin/${bin}.bin' \"\$@\"" \
 			>>"${install_dir}/${target}/bin/${bin}"
 		chmod 755 "${install_dir}/${target}/bin/${bin}"
 	done

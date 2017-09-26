@@ -140,7 +140,7 @@ fi
 
 case "${command}" in
 init)	# install some required packages (using pkg_add)
-	if [[ -n ${llvm_config} ]]; then
+	if [[ ${llvm_config} != "no" ]]; then
 		_llvm='llvm'
 	else
 		_llvm='ninja'
@@ -271,7 +271,7 @@ configure)	# configure target
 	"${dep_dir}/bin/cargo" -vV
 
 	# llvm stuff
-	if [[ -n ${llvm_config} ]]; then
+	if [[ ${llvm_config} != "no" ]]; then
 		_llvm='llvm-config'
 	else
 		_llvm='#llvm-config'

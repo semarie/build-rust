@@ -186,9 +186,17 @@ patch)	# apply local patches
 	sed -ie 's/.*|s| !s.starts_with("-O") && !s.starts_with("\/O").*//' "${rustc_xdir}/src/bootstrap/lib.rs"
 
 	## openssl-sys: libressl in -current isn't explicitly supported
-	echo 'patching: openssl-sys: libressl in -current isn t explicitly supported'
-	sed -ie 's/^RUST_LIBRESSL_NEW$/RUST_LIBRESSL_254/' "${rustc_xdir}/src/vendor/openssl-sys/build.rs"
+	_libressl_lasted=$(sed -ne '/RUST_LIBRESSL_[0-9]/{p;q;}' "${rustc_xdir}/src/vendor/openssl-sys/build.rs")
+	echo "patching: openssl-sys: libressl in -current isn't explicitly supported: using ${_libressl_lasted}"
+	sed -ie "s/^RUST_LIBRESSL_NEW$/${_libressl_lasted}/" "${rustc_xdir}/src/vendor/openssl-sys/build.rs"
 	sed -ie 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/src/vendor/openssl-sys/.cargo-checksum.json"
+
+	## filetime: don't try to use set_file_times_u()
+	if grep -q '^1\.22\.' "${rustc_xdir}/version"; then
+		echo "patching: filetime: don't try to use set_file_times_u()"
+		sed -ie 's/android/openbsd/g' "${rustc_xdir}/src/vendor/filetime/src/unix.rs"
+		sed -ie 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/src/vendor/filetime/.cargo-checksum.json"
+	fi
 
 	exit 0
 	;;

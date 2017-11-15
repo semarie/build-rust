@@ -153,7 +153,7 @@ init)	# install some required packages (using pkg_add)
 	fi
 
 	exec ${SUDO} pkg_add -a 'python%2.7' 'gmake' 'g++%4.9' 'git' \
-		'curl' 'cmake' \
+		'curl' 'cmake' 'bash' \
 		${_ccache} \
 		${_llvm}
 	;;
@@ -337,7 +337,7 @@ install)	# install sets
 			|| exit 1
 		tar zxf "${dist_dir}/${_c}-${target}-${triple_arch}.tar.gz" \
 			-C "${tmpdir}"
-		"${tmpdir}/${_c}-${target}-${triple_arch}/install.sh" \
+		bash "${tmpdir}/${_c}-${target}-${triple_arch}/install.sh" \
 			--prefix="${install_dir}/${target}"
 		rm -rf -- "${tmpdir}"
 	done

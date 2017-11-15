@@ -244,12 +244,6 @@ configure)	# configure target
 			log "installing rustc-stable (from ports)"
 			${SUDO} pkg_add -a rust
 		fi
-
-		# install cargo-stable
-		if [[ ! -x "${dep_dir}/bin/cargo" ]]; then
-			log "installing cargo-stable (from ports)"
-			${SUDO} pkg_add -a cargo
-		fi
 		;;
 	nightly)
 		dep_dir="${install_dir}/beta"

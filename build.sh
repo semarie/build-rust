@@ -196,6 +196,13 @@ patch)	# apply local patches
 		sed -i 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/src/vendor/filetime/.cargo-checksum.json"
 	fi
 
+	## link to libc++
+	if grep -q '^1\.2[23]\.' "${rustc_xdir}/version"; then
+		echo "patching: link to libc++"
+		sed -i 's/"estdc\+\+"/"c++"/' "${rustc_xdir}/src/librustc_llvm/build.rs"
+		sed -i 's/"cargo:rustc-link-lib=gcc"/"cargo:rustc-link-lib=c++abi"/' "${rustc_xdir}/src/libunwind/build.rs"
+	fi
+
 	exit 0
 	;;
 rustbuild)	# rustbuild wrapper

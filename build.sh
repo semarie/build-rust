@@ -45,14 +45,12 @@ MAKE_JOBS=${MAKE_JOBS:-${def_MAKE_JOBS}}
 # practical variables (based on user-defined ones)
 dist_dir="${install_dir}/dist"
 crates_dir="${install_dir}/crates"
-rustc_dir="${build_dir}/rustc"
 
 # use canonicalize version
 mkdir -p "${install_dir}" "${build_dir}"
 build_dir=$(readlink -fn "${build_dir}")
 install_dir=$(readlink -fn "${install_dir}")
 dist_dir=$(readlink -fn "${dist_dir}")
-rustc_dir=$(readlink -fn "${rustc_dir}")
 crates_dir=$(readlink -fn "${crates_dir}")
 
 # cargo configuration
@@ -127,7 +125,7 @@ init)
 esac
 
 # source dir
-rustc_xdir="${rustc_dir}/rustc-${target}-src"
+rustc_xdir="${build_dir}/rustc-${target}-src"
 
 # get command
 if [[ $# -eq 0 ]]; then
@@ -163,17 +161,17 @@ fetch)	# fetch latest rust version
 		"${distfiles_rustc_base}/rustc-${target}-src.tar.gz" \
 		"${dist_dir}/rustc-${target}-src.tar.gz" \
 	;;
-extract)	# extract rust version from dist_dir to rustc_dir
+extract)	# extract rust version from dist_dir to build_dir
 	"${build_rust}" "${target}" fetch
 
-	if [[ -d "${rustc_dir}/rustc-${target}-src" ]]; then
-		log "removing ${rustc_dir}/rustc-${target}-src"
-		rm -rf -- "${rustc_dir}/rustc-${target}-src"
+	if [[ -d "${build_dir}/rustc-${target}-src" ]]; then
+		log "removing ${build_dir}/rustc-${target}-src"
+		rm -rf -- "${build_dir}/rustc-${target}-src"
 	fi
-	mkdir -p -- "${rustc_dir}"
+	mkdir -p -- "${build_dir}"
 
 	log "extracting rustc-${target}-src.tar.gz"
-	exec tar zxf "${dist_dir}/rustc-${target}-src.tar.gz" -C "${rustc_dir}"
+	exec tar zxf "${dist_dir}/rustc-${target}-src.tar.gz" -C "${build_dir}"
 	;;
 patch)	# apply local patches
 	[[ ! -d "${rustc_xdir}" ]] && \
@@ -207,12 +205,12 @@ rustbuild)	# rustbuild wrapper
 	log "starting rustbuild ${@}"
 	ulimit -c 0
 	ulimit -d `ulimit -dH`
-	cd "${rustc_dir}" && exec env \
+	cd "${build_dir}" && exec env \
 		PATH="${build_dir}/bin:${PATH}" \
 		"python2.7" "${rustc_xdir}/x.py" "$@"
 	;;
 clean)	# run rustbuild clean (do not remove llvm)
-	[[ ! -d "${rustc_dir}/build" \
+	[[ ! -d "${build_dir}/build" \
 		|| ! -r "${rustc_xdir}/.configure-${target}" \
 		]] && exit 0
 
@@ -284,8 +282,8 @@ configure)	# configure target
 	fi
 
 	# generate config file
-	mkdir -p "${rustc_dir}"
-	cat >"${rustc_dir}/config.toml" <<EOF
+	mkdir -p "${build_dir}"
+	cat >"${build_dir}/config.toml" <<EOF
 [build]
 rustc = "${dep_dir}/bin/rustc"
 cargo = "${dep_dir}/bin/cargo"
@@ -323,7 +321,7 @@ build)	# invoke rustbuild for making dist files
 	log "copying ${target} distfiles to ${dist_dir}"
 	mkdir -p "${dist_dir}"
 	for _c in rustc rust-std cargo; do
-		_f="${rustc_dir}/build/dist/${_c}-${target}-${triple_arch}.tar.gz"
+		_f="${build_dir}/build/dist/${_c}-${target}-${triple_arch}.tar.gz"
 		ln -f "${_f}" "${dist_dir}" \
 			|| cp -f "${_f}" "${dist_dir}"
 	done

@@ -230,7 +230,7 @@ clean-all)	# remove build_dir
 pre-configure)
 	# create bin directory wrapper
 	mkdir -p "${build_dir}/bin"
-	for _p in gcc g++; do
+	for _p in cc c++; do
 		if [[ "${ccache}" != "yes" ]]; then
 			ln -fs "/usr/bin/${_p}" "${build_dir}/bin/${_p}"
 		else	
@@ -242,11 +242,11 @@ pre-configure)
 		fi
 	done
 
-	ln -fs "gcc" "${build_dir}/bin/cc"
-	ln -fs "g++" "${build_dir}/bin/c++"
+	ln -fs "cc" "${build_dir}/bin/gcc"
+	ln -fs "c++" "${build_dir}/bin/g++"
 
-	ln -fs "clang" "${build_dir}/bin/cc"
-	ln -fs "clang++" "${build_dir}/bin/c++"
+	ln -fs "cc" "${build_dir}/bin/clang"
+	ln -fs "c++" "${build_dir}/bin/clang++"
 	;;
 configure)	# configure target
 	"${build_rust}" "${target}" pre-configure

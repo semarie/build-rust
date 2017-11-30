@@ -152,7 +152,7 @@ init)	# install some required packages (using pkg_add)
 		_ccache='ccache'
 	fi
 
-	exec ${SUDO} pkg_add -a 'python%2.7' 'gmake' 'g++%4.9' 'git' \
+	exec ${SUDO} pkg_add -a 'python%2.7' 'gmake' 'git' \
 		'curl' 'cmake' 'bash' \
 		${_ccache} \
 		${_llvm}
@@ -227,17 +227,21 @@ pre-configure)
 	mkdir -p "${build_dir}/bin"
 	for _p in gcc g++; do
 		if [[ "${ccache}" != "yes" ]]; then
-			ln -fs "/usr/local/bin/e${_p}" "${build_dir}/bin/${_p}"
+			ln -fs "/usr/bin/${_p}" "${build_dir}/bin/${_p}"
 		else	
 			rm -f "${build_dir}/bin/${_p}" || true
 			echo '#!/bin/sh' >"${build_dir}/bin/${_p}"
-			echo "exec ccache /usr/local/bin/e${_p} \"\${@}\"" \
+			echo "exec ccache /usr/bin/${_p} \"\${@}\"" \
 				>>"${build_dir}/bin/${_p}"
 			chmod 755 "${build_dir}/bin/${_p}"
 		fi
 	done
+
 	ln -fs "gcc" "${build_dir}/bin/cc"
 	ln -fs "g++" "${build_dir}/bin/c++"
+
+	ln -fs "clang" "${build_dir}/bin/cc"
+	ln -fs "clang++" "${build_dir}/bin/c++"
 	;;
 configure)	# configure target
 	"${build_rust}" "${target}" pre-configure
@@ -354,10 +358,6 @@ install)	# install sets
 			>>"${install_dir}/${target}/bin/${bin}"
 		chmod 755 "${install_dir}/${target}/bin/${bin}"
 	done
-
-	# XXX let cc (aka clang) found libgcc.a
-	ln -fs $(env PATH="${build_dir}/bin:${PATH}" gcc -print-libgcc-file-name) \
-		"${install_dir}/${target}/lib/rustlib/${triple_arch}/lib"
 
 	# XXX copy system lib ?
 	;;

@@ -183,19 +183,19 @@ patch)	# apply local patches
 
 	## bootstrap: pass optimization flags: https://github.com/rust-lang/rust/issues/39900
 	echo 'patching: bootstrap: pass optimization flags'
-	sed -ie 's/.*|s| !s.starts_with("-O") && !s.starts_with("\/O").*//' "${rustc_xdir}/src/bootstrap/lib.rs"
+	sed -i 's/.*|s| !s.starts_with("-O") && !s.starts_with("\/O").*//' "${rustc_xdir}/src/bootstrap/lib.rs"
 
 	## openssl-sys: libressl in -current isn't explicitly supported
 	_libressl_lasted=$(sed -ne '/RUST_LIBRESSL_[0-9]/{p;q;}' "${rustc_xdir}/src/vendor/openssl-sys/build.rs")
 	echo "patching: openssl-sys: libressl in -current isn't explicitly supported: using ${_libressl_lasted}"
-	sed -ie "s/^RUST_LIBRESSL_NEW$/${_libressl_lasted}/" "${rustc_xdir}/src/vendor/openssl-sys/build.rs"
-	sed -ie 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/src/vendor/openssl-sys/.cargo-checksum.json"
+	sed -i "s/^RUST_LIBRESSL_NEW$/${_libressl_lasted}/" "${rustc_xdir}/src/vendor/openssl-sys/build.rs"
+	sed -i 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/src/vendor/openssl-sys/.cargo-checksum.json"
 
 	## filetime: don't try to use set_file_times_u()
 	if grep -q '^1\.22\.' "${rustc_xdir}/version"; then
 		echo "patching: filetime: don't try to use set_file_times_u()"
-		sed -ie 's/android/openbsd/g' "${rustc_xdir}/src/vendor/filetime/src/unix.rs"
-		sed -ie 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/src/vendor/filetime/.cargo-checksum.json"
+		sed -i 's/android/openbsd/g' "${rustc_xdir}/src/vendor/filetime/src/unix.rs"
+		sed -i 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/src/vendor/filetime/.cargo-checksum.json"
 	fi
 
 	exit 0

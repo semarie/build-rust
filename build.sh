@@ -203,6 +203,12 @@ patch)	# apply local patches
 		sed -i 's/"cargo:rustc-link-lib=gcc"/"cargo:rustc-link-lib=c++abi"/' "${rustc_xdir}/src/libunwind/build.rs"
 	fi
 
+	## use system libcompiler_rt
+	if grep -q '^1.2[34]\.' "${rustc_xdir}/version"; then
+		echo "patching: use system libcompiler_rt"
+		sed -i '/env::var\("TARGET"\).unwrap/s/$/if target.contains("openbsd") { println!("cargo:rustc-link-search=native=\/usr\/lib"); println!("cargo:rustc-link-lib=static=compiler_rt"); return; }/' "${rustc_xdir}/src/libcompiler_builtins/build.rs"
+	fi
+
 	## unbreak build from tarball
 	if grep -q '^1.24\.' "${rustc_xdir}/version"; then
 		echo "patching: build beta from tarball"

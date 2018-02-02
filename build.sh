@@ -203,6 +203,12 @@ patch)	# apply local patches
 		sed -i 's/"cargo:rustc-link-lib=gcc"/"cargo:rustc-link-lib=c++abi"/' "${rustc_xdir}/src/libunwind/build.rs"
 	fi
 
+	## unbreak build from tarball
+	if grep -q '^1.24\.' "${rustc_xdir}/version"; then
+		echo "patching: build beta from tarball"
+		sed -i "/fn beta_prerelease_version(&self)/s/$/if 1==1 { return 99 };/" "${rustc_xdir}/src/bootstrap/lib.rs"
+	fi
+
 	exit 0
 	;;
 rustbuild)	# rustbuild wrapper

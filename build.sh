@@ -216,6 +216,12 @@ patch)	# apply local patches
 		sed -i "/fn beta_prerelease_version(&self)/s/$/if 1==1 { return 99 };/" "${rustc_xdir}/src/bootstrap/lib.rs"
 	fi
 
+	## use ninja for building binaryen
+	if grep -q '^1.2[34]\.' "${rustc_xdir}/version"; then
+		echo "patching: use ninja for building binaryen"
+		sed -i '/\.build_target("binaryen")$/s/$/.generator("Ninja")/' "${rustc_xdir}/src/librustc_binaryen/build.rs"
+	fi
+
 	exit 0
 	;;
 rustbuild)	# rustbuild wrapper

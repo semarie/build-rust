@@ -210,12 +210,6 @@ patch)	# apply local patches
 		sed -i '/env::var("TARGET").unwrap();$/s/$/if target.contains("openbsd") { println!("cargo:rustc-link-search=native=\/usr\/lib"); println!("cargo:rustc-link-lib=static=compiler_rt"); return; }/' "${rustc_xdir}/src/libcompiler_builtins/build.rs"
 	fi
 
-	## unbreak build from tarball
-	if grep -q '^1.24\.' "${rustc_xdir}/version"; then
-		echo "patching: build beta from tarball"
-		sed -i "/fn beta_prerelease_version(&self)/s/$/if 1==1 { return 99 };/" "${rustc_xdir}/src/bootstrap/lib.rs"
-	fi
-
 	## use ninja for building binaryen
 	if grep -q '^1.2[34]\.' "${rustc_xdir}/version"; then
 		echo "patching: use ninja for building binaryen"

@@ -205,13 +205,13 @@ patch)	# apply local patches
 	fi
 
 	## use system libcompiler_rt
-	if grep -q '^1.2[345]\.' "${rustc_xdir}/version"; then
+	if grep -q '^1.2[3456]\.' "${rustc_xdir}/version"; then
 		echo "patching: use system libcompiler_rt"
 		sed -i '/env::var("TARGET").unwrap();$/s/$/if target.contains("openbsd") { println!("cargo:rustc-link-search=native=\/usr\/lib"); println!("cargo:rustc-link-lib=static=compiler_rt"); return; }/' "${rustc_xdir}/src/libcompiler_builtins/build.rs"
 	fi
 
 	## use ninja for building binaryen
-	if grep -q '^1.2[34]\.' "${rustc_xdir}/version"; then
+	if grep -q '^1.2[345]\.' "${rustc_xdir}/version"; then
 		echo "patching: use ninja for building binaryen"
 		sed -i '/\.build_target("binaryen")$/s/$/.generator("Ninja")/' "${rustc_xdir}/src/librustc_binaryen/build.rs"
 	fi

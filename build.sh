@@ -403,6 +403,9 @@ beta|nightly)	# prepare a release
 	"${build_rust}" "${target}" install
 	) 2>&1 | tee "${install_dir}/${target}/build.log"
 	;;
+test)	# invoke rustbuild for testing
+	exec "${build_rust}" "${target}" rustbuild test --jobs=${MAKE_JOBS} "$@"
+	;;
 run-rustc)
 	if [[ ! -x "${install_dir}/${target}/bin/rustc" ]]; then
 		echo "error: missing rustc-${target}" >&2

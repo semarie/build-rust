@@ -290,11 +290,11 @@ configure)	# configure target
 	# print information on current build
 	log "info: building: $(cat ${rustc_xdir}/version)"
 	log "info: required stage0:"
-	sed -ne '/^[^#]/p' "${rustc_xdir}/src/stage0.txt"
+	sed -ne 's/^\([^#]\)/	\1/p' "${rustc_xdir}/src/stage0.txt"
 	log "info: rustc -vV"
-	"${dep_dir}/bin/rustc" -vV
+	"${dep_dir}/bin/rustc" -vV | sed 's/^/	/'
 	log "info: cargo -vV"
-	"${dep_dir}/bin/cargo" -vV
+	"${dep_dir}/bin/cargo" -vV | sed 's/^/	/'
 
 	# llvm stuff
 	if [[ ${llvm_config} != "no" ]]; then

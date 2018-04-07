@@ -56,8 +56,8 @@ crates_dir=$(readlink -fn "${crates_dir}")
 # cargo configuration
 CARGO_HOME="${crates_dir}"
 LIBGIT2_SYS_USE_PKG_CONFIG=1
-VERBOSE=1
-RUST_BACKTRACE=1
+VERBOSE=${VERBOSE:-1}
+RUST_BACKTRACE=${RUST_BACKTRACE:-1}
 export CARGO_HOME LIBGIT2_SYS_USE_PKG_CONFIG VERBOSE CFLAGS RUST_BACKTRACE
 
 case $(arch -s) in
@@ -152,7 +152,7 @@ init)	# install some required packages (using pkg_add)
 	fi
 
 	exec ${SUDO} pkg_add -aU 'python%2.7' 'gmake' 'git' \
-		'curl' 'cmake' 'bash' \
+		'curl' 'cmake' 'bash' 'ggrep' 'gdb' \
 		${_ccache} \
 		${_llvm}
 	;;
@@ -289,6 +289,8 @@ configure)	# configure target
 
 	# print information on current build
 	log "info: building: $(cat ${rustc_xdir}/version)"
+	log "info: required stage0:"
+	sed -ne '/^[^#]/p' "${rustc_xdir}/src/stage0.txt"
 	log "info: rustc -vV"
 	"${dep_dir}/bin/rustc" -vV
 	log "info: cargo -vV"
@@ -308,10 +310,11 @@ configure)	# configure target
 rustc = "${dep_dir}/bin/rustc"
 cargo = "${dep_dir}/bin/cargo"
 python = "/usr/local/bin/python2.7"
+gdb = "/usr/local/bin/egdb"
 #docs = false
 vendor = true
 extended = true
-verbose = 2
+verbose = ${VERBOSE:-0}
 
 [install]
 prefix = "${install_dir}/${target}"
@@ -395,7 +398,8 @@ beta|nightly)	# prepare a release
 	fi
 
 	(
-	"${build_rust}" "${target}" clean
+	"${build_rust}" "${target}" clean \
+		|| "${build_rust}" "${target}" clean-all
 	"${build_rust}" "${target}" extract
 	"${build_rust}" "${target}" patch
 	"${build_rust}" "${target}" configure
@@ -404,7 +408,18 @@ beta|nightly)	# prepare a release
 	) 2>&1 | tee "${install_dir}/${target}/build.log"
 	;;
 test)	# invoke rustbuild for testing
-	exec "${build_rust}" "${target}" rustbuild test --jobs=${MAKE_JOBS} "$@"
+	if [ $# -eq 0 ] ; then
+		# no arguments: run whole testsuite with logging
+		set +e
+		env RUST_BACKTRACE=0 "${build_rust}" "${target}" rustbuild test --jobs=${MAKE_JOBS} --no-fail-fast \
+			| tee "${install_dir}/${target}/test.log"
+
+		# show summary of failures
+		exec grep -F '... FAILED' "${install_dir}/${target}/test.log"
+	else
+		# arguments passed: do controlled (and not loggged) testing
+		exec env RUST_BACKTRACE=0 "${build_rust}" "${target}" rustbuild test --jobs=${MAKE_JOBS} "$@"
+	fi
 	;;
 run-rustc)
 	if [[ ! -x "${install_dir}/${target}/bin/rustc" ]]; then

@@ -205,7 +205,7 @@ patch)	# apply local patches
 	fi
 
 	## use system libcompiler_rt
-	if grep -q '^1.2[3456]\.' "${rustc_xdir}/version"; then
+	if grep -q '^1.2[34567]\.' "${rustc_xdir}/version"; then
 		echo "patching: use system libcompiler_rt"
 		sed -i '/env::var("TARGET").unwrap();$/s/$/if target.contains("openbsd") { println!("cargo:rustc-link-search=native=\/usr\/lib"); println!("cargo:rustc-link-lib=static=compiler_rt"); return; }/' "${rustc_xdir}/src/libcompiler_builtins/build.rs"
 	fi
@@ -405,6 +405,7 @@ beta|nightly)	# prepare a release
 	"${build_rust}" "${target}" configure
 	"${build_rust}" "${target}" build
 	"${build_rust}" "${target}" install
+	"${build_rust}" "${target}" test
 	) 2>&1 | tee "${install_dir}/${target}/build.log"
 	;;
 test)	# invoke rustbuild for testing
@@ -415,6 +416,8 @@ test)	# invoke rustbuild for testing
 			| tee "${install_dir}/${target}/test.log"
 
 		# show summary of failures
+		echo ''
+		echo 'Summary:'
 		exec grep -F '... FAILED' "${install_dir}/${target}/test.log"
 	else
 		# arguments passed: do controlled (and not loggged) testing

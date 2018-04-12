@@ -407,6 +407,9 @@ beta|nightly)	# prepare a release
 	"${build_rust}" "${target}" install
 	"${build_rust}" "${target}" test
 	) 2>&1 | tee "${install_dir}/${target}/build.log"
+
+	# keep a copy of latest good log
+	ln -f "${install_dir}/${target}/build.log" "${install_dir}/${target}/build-good.log"
 	;;
 test)	# invoke rustbuild for testing
 	if [ $# -eq 0 ] ; then

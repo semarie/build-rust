@@ -405,27 +405,27 @@ beta|nightly)	# prepare a release
 	"${build_rust}" "${target}" configure
 	"${build_rust}" "${target}" build
 	"${build_rust}" "${target}" install
-	"${build_rust}" "${target}" test
 	) 2>&1 | tee "${install_dir}/${target}/build.log"
 
 	# keep a copy of latest good log
 	cp -f "${install_dir}/${target}/build.log" "${install_dir}/${target}/build-good.log"
 	;;
 test)	# invoke rustbuild for testing
-	if [ $# -eq 0 ] ; then
-		# no arguments: run whole testsuite with logging
-		set +e
-		env RUST_BACKTRACE=0 "${build_rust}" "${target}" rustbuild test --jobs=${MAKE_JOBS} --no-fail-fast \
-			| tee "${install_dir}/${target}/test.log"
+	exec env RUST_BACKTRACE=0 "${build_rust}" "${target}" rustbuild test --jobs=${MAKE_JOBS} "$@"
+	;;
+buildbot)	# build and test
+	# build if need
+	"${build_rust}" "${target}"
 
-		# show summary of failures
-		echo ''
-		echo 'Summary:'
-		exec grep -F '... FAILED' "${install_dir}/${target}/test.log"
-	else
-		# arguments passed: do controlled (and not loggged) testing
-		exec env RUST_BACKTRACE=0 "${build_rust}" "${target}" rustbuild test --jobs=${MAKE_JOBS} "$@"
-	fi
+	# test
+	set +e
+	env RUST_BACKTRACE=0 "${build_rust}" "${target}" rustbuild test --jobs=${MAKE_JOBS} --no-fail-fast \
+		| tee "${install_dir}/${target}/test.log"
+
+	# show summary of failures
+	echo ''
+	echo 'Summary:'
+	exec grep -F '... FAILED' "${install_dir}/${target}/test.log"
 	;;
 run-rustc)
 	if [[ ! -x "${install_dir}/${target}/bin/rustc" ]]; then

@@ -1,4 +1,4 @@
-#!/bin/sh -eu
+#!/bin/ksh -eu
 #
 #  Copyright (c) 2017 Sebastien Marie <semarie@online.fr>
 # 
@@ -407,8 +407,19 @@ beta|nightly)	# prepare a release
 	"${build_rust}" "${target}" install
 	) 2>&1 | tee "${install_dir}/${target}/build.log"
 
-	# keep a copy of latest good log
-	cp -f "${install_dir}/${target}/build.log" "${install_dir}/${target}/build-good.log"
+	# ensure it has been installed
+	if [[ -x "${install_dir}/${target}/bin/rustc" && \
+		-r "${dist_dir}/rustc-${target}-src.tar.gz" && \
+		"${install_dir}/${target}/bin/rustc" -nt \
+		"${dist_dir}/rustc-${target}-src.tar.gz" ]]; then
+
+		# keep a copy of latest good log
+		log "task finished successfully: keeping build.log -> build-good.log"
+		exec cp -f "${install_dir}/${target}/build.log" "${install_dir}/${target}/build-good.log"
+	else
+		log "task not finished: see build.log for detail"
+		exit 1
+	fi
 	;;
 test)	# invoke rustbuild for testing
 	exec env RUST_BACKTRACE=0 "${build_rust}" "${target}" rustbuild test --jobs=${MAKE_JOBS} "$@"

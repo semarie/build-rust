@@ -185,9 +185,18 @@ patch)	# apply local patches
 	sed -i 's/.*|s| !s.starts_with("-O") && !s.starts_with("\/O").*//' "${rustc_xdir}/src/bootstrap/lib.rs"
 
 	## openssl-sys: libressl in -current isn't explicitly supported
-	_libressl_lasted=$(sed -ne '/RUST_LIBRESSL_[0-9]/{p;q;}' "${rustc_xdir}/src/vendor/openssl-sys/build.rs")
-	echo "patching: openssl-sys: libressl in -current isn't explicitly supported: using ${_libressl_lasted}"
-	sed -i "s/^RUST_LIBRESSL_NEW$/${_libressl_lasted}/" "${rustc_xdir}/src/vendor/openssl-sys/build.rs"
+	if [ -r "${rustc_xdir}/src/vendor/openssl-sys/build.rs" ]; then
+		_libressl_lasted=$(sed -ne '/RUST_LIBRESSL_[0-9]/{p;q;}' "${rustc_xdir}/src/vendor/openssl-sys/build.rs")
+		echo "patching: openssl-sys: libressl in -current isn't explicitly supported: using ${_libressl_lasted}"
+		sed -i "s/^RUST_LIBRESSL_NEW$/${_libressl_lasted}/" "${rustc_xdir}/src/vendor/openssl-sys/build.rs"
+	else
+		echo "patching: openssl-sys: libressl in -current isn't explicitly supported"
+		# keep last supported version in hold space
+		# when seeing last entry (error), replace with hold space (as generic)
+		sed -i -e "/ => ('.', '.'),/h" \
+			-e "/_ => version_error(),/{g; s/(.*) =>/_ =>/; }" \
+			"${rustc_xdir}/src/vendor/openssl-sys/build/main.rs"
+	fi
 	sed -i 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/src/vendor/openssl-sys/.cargo-checksum.json"
 
 	## filetime: don't try to use set_file_times_u()

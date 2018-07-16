@@ -445,7 +445,7 @@ buildbot)	# build and test
 	# show summary of failures
 	echo ''
 	echo 'Summary:'
-	exec grep -F '... FAILED' "${install_dir}/${target}/test.log"
+	exec sed -ne '/^failures:$/,/^test result: FAILED/p' "${install_dir}/${target}/test.log"
 	;;
 run-rustc)
 	if [[ ! -x "${install_dir}/${target}/bin/rustc" ]]; then

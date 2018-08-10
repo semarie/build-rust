@@ -334,6 +334,7 @@ src-tarball = false
 [rust]
 channel = "${target}"
 codegen-tests = false
+verbose-tests = true
 
 [target.${triple_arch}]
 ${_llvm} = "${llvm_config}"
@@ -434,18 +435,31 @@ test)	# invoke rustbuild for testing
 	exec env RUST_BACKTRACE=0 "${build_rust}" "${target}" rustbuild test --jobs=${MAKE_JOBS} "$@"
 	;;
 buildbot)	# build and test
+	# force a configure
+	"${build_rust}" "${target}" configure
+
 	# build if need
 	"${build_rust}" "${target}"
+
+	# keep previous log
+	mv "${install_dir}/${target}/test.log" "${install_dir}/${target}/test-prev.log"
 
 	# test
 	set +e
 	env RUST_BACKTRACE=0 "${build_rust}" "${target}" rustbuild test --jobs=${MAKE_JOBS} --no-fail-fast \
 		| tee "${install_dir}/${target}/test.log"
 
-	# show summary of failures
+	exec "${build_rust}" "${target}" buildbot-show
+	;;
+buildbot-show)	# show summary of failures
+	ls -l "${install_dir}/${target}/test.log"
 	echo ''
 	echo 'Summary:'
-	exec sed -ne '/^failures:$/,/^test result: FAILED/p' "${install_dir}/${target}/test.log"
+	sed -ne '/^failures:$/,/^test result: FAILED/p' "${install_dir}/${target}/test.log" \
+		| grep  -e '^    \[' \
+			-e '^    [^ ]*$' \
+			-e '^    [^ ].*(line ' \
+			-e 'FAILED'
 	;;
 run-rustc)
 	if [[ ! -x "${install_dir}/${target}/bin/rustc" ]]; then

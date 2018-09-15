@@ -442,7 +442,8 @@ buildbot)	# build and test
 	"${build_rust}" "${target}"
 
 	# keep previous log
-	mv "${install_dir}/${target}/test.log" "${install_dir}/${target}/test-prev.log"
+	test -r "${install_dir}/${target}/test.log" && \
+		mv "${install_dir}/${target}/test.log" "${install_dir}/${target}/test-prev.log"
 
 	# test
 	set +e

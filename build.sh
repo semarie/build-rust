@@ -180,30 +180,35 @@ patch)	# apply local patches
 
 	log "patching ${target}"
 
+	# create a link to avoid supporting -beta and -nightly differently
+	if [ ! -e "${rustc_xdir}/vendor" ]; then
+		ln -s "src/vendor" "${rustc_xdir}/vendor"
+	fi
+
 	## bootstrap: pass optimization flags: https://github.com/rust-lang/rust/issues/39900
 	echo 'patching: bootstrap: pass optimization flags'
 	sed -i 's/.*|s| !s.starts_with("-O") && !s.starts_with("\/O").*//' "${rustc_xdir}/src/bootstrap/lib.rs"
 
 	## openssl-sys: libressl in -current isn't explicitly supported
-	if [ -r "${rustc_xdir}/src/vendor/openssl-sys/build.rs" ]; then
-		_libressl_lasted=$(sed -ne '/RUST_LIBRESSL_[0-9]/{p;q;}' "${rustc_xdir}/src/vendor/openssl-sys/build.rs")
+	if [ -r "${rustc_xdir}/vendor/openssl-sys/build.rs" ]; then
+		_libressl_lasted=$(sed -ne '/RUST_LIBRESSL_[0-9]/{p;q;}' "${rustc_xdir}/vendor/openssl-sys/build.rs")
 		echo "patching: openssl-sys: libressl in -current isn't explicitly supported: using ${_libressl_lasted}"
-		sed -i "s/^RUST_LIBRESSL_NEW$/${_libressl_lasted}/" "${rustc_xdir}/src/vendor/openssl-sys/build.rs"
+		sed -i "s/^RUST_LIBRESSL_NEW$/${_libressl_lasted}/" "${rustc_xdir}/vendor/openssl-sys/build.rs"
 	else
 		echo "patching: openssl-sys: libressl in -current isn't explicitly supported"
 		# keep last supported version in hold space
 		# when seeing last entry (error), replace with hold space (as generic)
 		sed -i -e "/ => ('.', '.'),/h" \
 			-e "/_ => version_error(),/{g; s/(.*) =>/_ =>/; }" \
-			"${rustc_xdir}/src/vendor/openssl-sys/build/main.rs"
+			"${rustc_xdir}/vendor/openssl-sys/build/main.rs"
 	fi
-	sed -i 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/src/vendor/openssl-sys/.cargo-checksum.json"
+	sed -i 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/vendor/openssl-sys/.cargo-checksum.json"
 
 	## filetime: don't try to use set_file_times_u()
 	if grep -q '^1\.22\.' "${rustc_xdir}/version"; then
 		echo "patching: filetime: don't try to use set_file_times_u()"
-		sed -i 's/android/openbsd/g' "${rustc_xdir}/src/vendor/filetime/src/unix.rs"
-		sed -i 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/src/vendor/filetime/.cargo-checksum.json"
+		sed -i 's/android/openbsd/g' "${rustc_xdir}/vendor/filetime/src/unix.rs"
+		sed -i 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/vendor/filetime/.cargo-checksum.json"
 	fi
 
 	## link to libc++

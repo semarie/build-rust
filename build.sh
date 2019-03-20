@@ -440,6 +440,15 @@ test)	# invoke rustbuild for testing
 	exec env RUST_BACKTRACE=0 "${build_rust}" "${target}" rustbuild test --jobs=${MAKE_JOBS} "$@"
 	;;
 buildbot)	# build and test
+	# check if already running
+	if [[ -r "${build_dir}/lock" ]]; then
+		log "already running: $(cat ${build_dir}/lock)"
+		exit 1
+	fi
+	# mark as running
+	echo "started building ${target} at $(date) with pid $$" > "${build_dir}/lock"
+	trap "rm -- '${build_dir}/lock'" EXIT ERR 1 2 3 13 15
+	
 	# force a configure
 	"${build_rust}" "${target}" configure
 
@@ -455,7 +464,8 @@ buildbot)	# build and test
 	env RUST_BACKTRACE=0 "${build_rust}" "${target}" rustbuild test --jobs=${MAKE_JOBS} --no-fail-fast \
 		| tee "${install_dir}/${target}/test.log"
 
-	exec "${build_rust}" "${target}" buildbot-show
+	"${build_rust}" "${target}" buildbot-show
+	exit 0
 	;;
 buildbot-show)	# show summary of failures
 	ls -l "${install_dir}/${target}/test.log"

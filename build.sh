@@ -47,7 +47,7 @@ dist_dir="${install_dir}/dist"
 crates_dir="${install_dir}/crates"
 
 # use canonicalize version
-mkdir -p "${install_dir}" "${build_dir}"
+mkdir -p "${install_dir}" "${build_dir}" "${dist_dir}" "${crates_dir}"
 build_dir=$(readlink -fn "${build_dir}")
 install_dir=$(readlink -fn "${install_dir}")
 dist_dir=$(readlink -fn "${dist_dir}")

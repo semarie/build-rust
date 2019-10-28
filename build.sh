@@ -39,7 +39,7 @@ ccache="${ccache:-yes}"
 llvm_config="${llvm_config:-/usr/local/bin/llvm-config}"
 CFLAGS="${CFLAGS:--O2 -pipe}"
 
-def_MAKE_JOBS=$(sysctl -n hw.ncpu)
+def_MAKE_JOBS=$(sysctl -n hw.ncpuonline)
 MAKE_JOBS=${MAKE_JOBS:-${def_MAKE_JOBS}}
 
 # practical variables (based on user-defined ones)

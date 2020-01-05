@@ -283,6 +283,10 @@ configure)	# configure target
 			log "installing rustc-stable (from ports)"
 			${SUDO} pkg_add -a rust
 		fi
+		if [[ ! -x "${dep_dir}/bin/rustfmt" ]]; then
+			log "installing rustfmt-stable (from ports)"
+			${SUDO} pkg_add -a rust-rustfmt
+		fi
 		;;
 	nightly)
 		dep_dir="${install_dir}/beta"
@@ -304,6 +308,8 @@ configure)	# configure target
 	"${dep_dir}/bin/rustc" -vV | sed 's/^/	/'
 	log "info: cargo -vV"
 	"${dep_dir}/bin/cargo" -vV | sed 's/^/	/'
+	log "info: rustfmt -V"
+	"${dep_dir}/bin/rustfmt" -V | sed 's/^/	/'
 
 	# llvm stuff
 	if [[ ${llvm_config} != "no" ]]; then
@@ -318,6 +324,7 @@ configure)	# configure target
 [build]
 rustc = "${dep_dir}/bin/rustc"
 cargo = "${dep_dir}/bin/cargo"
+rustfmt = "${dep_dir}/bin/rustfmt"
 python = "/usr/local/bin/python2.7"
 gdb = "/usr/local/bin/egdb"
 #docs = false
@@ -353,7 +360,7 @@ build)	# invoke rustbuild for making dist files
 	# copy distfiles
 	log "copying ${target} distfiles to ${dist_dir}"
 	mkdir -p "${dist_dir}"
-	for _c in rustc rust-std cargo; do
+	for _c in rustc rust-std cargo rustfmt; do
 		_f="${build_dir}/build/dist/${_c}-${target}-${triple_arch}.tar.gz"
 		ln -f "${_f}" "${dist_dir}" \
 			|| cp -f "${_f}" "${dist_dir}"
@@ -361,8 +368,8 @@ build)	# invoke rustbuild for making dist files
 	;;
 install)	# install sets
 
-	# install rustc and rust-std sets
-	for _c in rustc rust-std cargo; do
+	# install rustc and required sets
+	for _c in rustc rust-std cargo rustfmt; do
 		log "installing ${_c}-${target}"
 
 		if [[ ! -r "${dist_dir}/${_c}-${target}-${triple_arch}.tar.gz" ]]; then
@@ -380,7 +387,7 @@ install)	# install sets
 	done
 
 	# replace binaries with a wrapper (for LD_LIBRARY_PATH)
-	for bin in rustc rustdoc cargo; do
+	for bin in rustc rustdoc cargo rustfmt; do
 		mv "${install_dir}/${target}/bin/${bin}" \
 			"${install_dir}/${target}/bin/${bin}.bin"
 		echo '#!/bin/sh' \

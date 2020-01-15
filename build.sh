@@ -287,6 +287,9 @@ configure)	# configure target
 			log "installing rustfmt-stable (from ports)"
 			${SUDO} pkg_add -a rust-rustfmt
 		fi
+
+		# comment rustfmt in config.toml
+		_rustfmt='#'
 		;;
 	nightly)
 		dep_dir="${install_dir}/beta"
@@ -324,7 +327,7 @@ configure)	# configure target
 [build]
 rustc = "${dep_dir}/bin/rustc"
 cargo = "${dep_dir}/bin/cargo"
-rustfmt = "${dep_dir}/bin/rustfmt"
+${_rustfmt:-}rustfmt = "${dep_dir}/bin/rustfmt"
 python = "/usr/local/bin/python2.7"
 gdb = "/usr/local/bin/egdb"
 #docs = false

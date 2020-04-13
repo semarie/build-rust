@@ -151,7 +151,7 @@ init)	# install some required packages (using pkg_add)
 		_ccache='ccache'
 	fi
 
-	exec ${SUDO} pkg_add -aU 'python%2.7' 'gmake' 'git' \
+	exec ${SUDO} pkg_add -aU 'python%3.7' 'gmake' 'git' \
 		'curl' 'cmake' 'bash' 'ggrep' 'gdb' \
 		${_ccache} \
 		${_llvm}
@@ -236,7 +236,7 @@ rustbuild)	# rustbuild wrapper
 	ulimit -d `ulimit -dH`
 	cd "${build_dir}" && exec env \
 		PATH="${build_dir}/bin:${PATH}" \
-		"python2.7" "${rustc_xdir}/x.py" "$@"
+		"python3" "${rustc_xdir}/x.py" "$@"
 	;;
 clean)	# run rustbuild clean (do not remove llvm)
 	[[ ! -d "${build_dir}/build" \
@@ -328,7 +328,7 @@ configure)	# configure target
 rustc = "${dep_dir}/bin/rustc"
 cargo = "${dep_dir}/bin/cargo"
 ${_rustfmt:-}rustfmt = "${dep_dir}/bin/rustfmt"
-python = "/usr/local/bin/python2.7"
+python = "/usr/local/bin/python3"
 gdb = "/usr/local/bin/egdb"
 #docs = false
 vendor = true

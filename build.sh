@@ -314,6 +314,17 @@ configure)	# configure target
 	log "info: rustfmt -V"
 	"${dep_dir}/bin/rustfmt" -V | sed 's/^/	/'
 
+	# check rustc version
+	case "${target}" in
+	beta)
+		required=$(sed -n -e 's/\.0$/./' -e 's/^rustc: //p' "${rustc_xdir}/src/stage0.txt")
+		if ! "${dep_dir}/bin/rustc" -vV | grep -qF "release: ${required}" 2>/dev/null; then
+			log "error: build requires rustc ${required}"
+			exit 1
+		fi
+		;;
+	esac
+
 	# llvm stuff
 	if [[ ${llvm_config} != "no" ]]; then
 		_llvm='llvm-config'

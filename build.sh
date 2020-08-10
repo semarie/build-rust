@@ -151,7 +151,7 @@ init)	# install some required packages (using pkg_add)
 		_ccache='ccache'
 	fi
 
-	exec ${SUDO} pkg_add -aU 'python%3.7' 'gmake' 'git' \
+	exec ${SUDO} pkg_add -aU 'python3' 'gmake' 'git' \
 		'curl' 'cmake' 'bash' 'ggrep' 'gdb' \
 		${_ccache} \
 		${_llvm}

@@ -461,7 +461,7 @@ buildbot)	# build and test
 	fi
 	# mark as running
 	echo "started building ${target} at $(date) with pid $$" > "${build_dir}/lock"
-	trap "rm -- '${build_dir}/lock'" EXIT ERR 1 2 3 13 15
+	trap "rm -f -- '${build_dir}/lock'" EXIT ERR 1 2 3 13 15
 	
 	# force a configure
 	"${build_rust}" "${target}" configure

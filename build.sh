@@ -348,6 +348,7 @@ prefix = "${install_dir}/${target}"
 
 [dist]
 src-tarball = false
+missing-tools = true
 
 [rust]
 channel = "${target}"

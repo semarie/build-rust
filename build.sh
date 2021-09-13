@@ -303,7 +303,11 @@ configure)	# configure target
 	# print information on current build
 	log "info: building: $(cat ${rustc_xdir}/version)"
 	log "info: required stage0:"
-	sed -ne 's/^\([^#]\)/	\1/p' "${rustc_xdir}/src/stage0.txt"
+ 	if [ -e "${rustc_xdir}/src/stage0.txt" ]; then
+		sed -ne 's/^\([^#]\)/	\1/p' "${rustc_xdir}/src/stage0.txt"
+	else
+		sed -ne '/"compiler": {/,/}/p' "${rustc_xdir}/src/stage0.json"
+	fi
 	log "info: rustc -vV"
 	"${dep_dir}/bin/rustc" -vV | sed 's/^/	/'
 	log "info: cargo -vV"

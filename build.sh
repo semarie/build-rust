@@ -318,7 +318,12 @@ configure)	# configure target
 	# check rustc version
 	case "${target}" in
 	beta)
-		required=$(sed -n -e 's/\.0$/./' -e 's/^rustc: //p' "${rustc_xdir}/src/stage0.txt")
+ 		if [ -e "${rustc_xdir}/src/stage0.txt" ]; then
+			required=$(sed -n -e 's/\.0$/./' -e 's/^rustc: //p' "${rustc_xdir}/src/stage0.txt")
+		else
+			required=$(sed -ne '/"compiler": {/,/}/p' "${rustc_xdir}/src/stage0.json" \
+				| sed -ne '/^ *"version": /s/.*: "\(.*\.\)0"/\1/p')
+		fi
 		if ! "${dep_dir}/bin/rustc" -vV | grep -qF "release: ${required}" 2>/dev/null; then
 			log "error: build requires rustc ${required}"
 			exit 1

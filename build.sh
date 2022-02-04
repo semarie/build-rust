@@ -304,11 +304,7 @@ configure)	# configure target
 	# print information on current build
 	log "info: building: $(cat ${rustc_xdir}/version)"
 	log "info: required stage0:"
- 	if [ -e "${rustc_xdir}/src/stage0.txt" ]; then
-		sed -ne 's/^\([^#]\)/	\1/p' "${rustc_xdir}/src/stage0.txt"
-	else
-		sed -ne '/"compiler": {/,/}/p' "${rustc_xdir}/src/stage0.json"
-	fi
+	sed -ne '/"compiler": {/,/}/p' "${rustc_xdir}/src/stage0.json"
 	log "info: rustc -vV"
 	"${dep_dir}/bin/rustc" -vV | sed 's/^/	/'
 	log "info: cargo -vV"
@@ -319,12 +315,8 @@ configure)	# configure target
 	# check rustc version
 	case "${target}" in
 	beta)
- 		if [ -e "${rustc_xdir}/src/stage0.txt" ]; then
-			required=$(sed -n -e 's/\.0$/./' -e 's/^rustc: //p' "${rustc_xdir}/src/stage0.txt")
-		else
-			required=$(sed -ne '/"compiler": {/,/}/p' "${rustc_xdir}/src/stage0.json" \
-				| sed -ne '/^ *"version": /s/.*: "\(.*\.\)0"/\1/p')
-		fi
+		required=$(sed -ne '/"compiler": {/,/}/p' "${rustc_xdir}/src/stage0.json" \
+			| sed -ne 's/^ *"version": "\(.*\.\)0"/\1/p')
 		if ! "${dep_dir}/bin/rustc" -vV | grep -qF "release: ${required}" 2>/dev/null; then
 			log "error: build requires rustc ${required}"
 			exit 1
@@ -372,6 +364,7 @@ ${_llvm} = "${llvm_config}"
 static-libstdcpp = false
 ninja = true
 EOF
+
 	exec touch "${rustc_xdir}/.configure-${target}"
 	;;
 build)	# invoke rustbuild for making dist files

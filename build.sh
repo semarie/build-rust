@@ -232,6 +232,9 @@ rustbuild)	# rustbuild wrapper
 	[[ ! -r "${rustc_xdir}/.configure-${target}" ]] \
 		&& "${build_rust}" "${target}" configure
 
+	# remove .cargo directory
+	rm -rf -- "${build_dir}/.cargo"
+
 	log "starting rustbuild ${@}"
 	ulimit -c 0
 	ulimit -d `ulimit -dH`

@@ -407,12 +407,7 @@ install)	# install sets
 	# replace binaries with a wrapper (for LD_LIBRARY_PATH)
 	for bin in rustc rustdoc cargo rustfmt; do
 		mv "${install_dir}/${target}/bin/${bin}" \
-			"${install_dir}/${target}/bin/${bin}.bin"
-		echo '#!/bin/sh' \
-			>"${install_dir}/${target}/bin/${bin}"
-		echo "LD_LIBRARY_PATH='${install_dir}/${target}/lib${LD_LIBRARY_PATH:+:}${LD_LIBRARY_PATH:-}' exec '${install_dir}/${target}/bin/${bin}.bin' \"\$@\"" \
-			>>"${install_dir}/${target}/bin/${bin}"
-		chmod 755 "${install_dir}/${target}/bin/${bin}"
+			"${install_dir}/${target}/bin/${bin}"
 	done
 
 	# XXX copy system lib ?

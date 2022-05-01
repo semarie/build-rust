@@ -337,6 +337,8 @@ configure)	# configure target
 	# generate config file
 	mkdir -p "${build_dir}"
 	cat >"${build_dir}/config.toml" <<EOF
+changelog-seen = 2
+
 [build]
 rustc = "${dep_dir}/bin/rustc"
 cargo = "${dep_dir}/bin/cargo"

@@ -238,9 +238,12 @@ rustbuild)	# rustbuild wrapper
 	log "starting rustbuild ${@}"
 	ulimit -c 0
 	ulimit -d `ulimit -dH`
-	cd "${build_dir}" && exec env \
+	cd "${rustc_xdir}" && exec env \
 		PATH="${build_dir}/bin:${PATH}" \
-		"python3" "${rustc_xdir}/x.py" "$@"
+		"python3" "${rustc_xdir}/x.py" \
+			"--config" "${build_dir}/config.toml" \
+			"--build-dir" "${build_dir}/build" \
+			"$@"
 	;;
 clean)	# run rustbuild clean (do not remove llvm)
 	[[ ! -d "${build_dir}/build" \

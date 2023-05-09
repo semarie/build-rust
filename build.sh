@@ -181,10 +181,8 @@ patch)	# apply local patches
 
 	log "patching ${target}"
 
-	# create a link to avoid supporting -beta and -nightly differently
-	if [ ! -e "${rustc_xdir}/vendor" ]; then
-		ln -s "src/vendor" "${rustc_xdir}/vendor"
-	fi
+	## bootstrap: create an empty .gitmodules file
+	touch "${rustc_xdir}/.gitmodules"
 
 	## bootstrap: pass optimization flags: https://github.com/rust-lang/rust/issues/39900
 	echo 'patching: bootstrap: pass optimization flags'

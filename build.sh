@@ -195,8 +195,8 @@ patch)	# apply local patches
 	sed -i -e "/ => ('.', '.'),/h" \
 		-e "/ => ('.', '.', '.'),/h" \
 		-e "/_ => version_error(),/{g; s/(.*) =>/_ =>/; }" \
-		"${rustc_xdir}/vendor/openssl-sys/build/main.rs"
-	sed -i 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/vendor/openssl-sys/.cargo-checksum.json"
+		"${rustc_xdir}/vendor/openssl-sys"*"/build/main.rs"
+	sed -i 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/vendor/openssl-sys"*"/.cargo-checksum.json"
 
 	## filetime: don't try to use set_file_times_u()
 	if grep -q '^1\.22\.' "${rustc_xdir}/version"; then

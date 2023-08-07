@@ -224,6 +224,10 @@ patch)	# apply local patches
 		sed -i '/\.build_target("binaryen")$/s/$/.generator("Ninja")/' "${rustc_xdir}/src/librustc_binaryen/build.rs"
 	fi
 
+	## llvm: properly parse library suffixes on OpenBSD
+	sed -i -e 's/suffixes ${CMAKE_FIND_LIBRARY_SUFFIXES}/suffixes ${CMAKE_FIND_LIBRARY_SUFFIXES} ".so.[0-9]+.[0-9]+"/' \
+		"${rustc_xdir}/src/llvm-project/llvm/cmake/modules/GetLibraryName.cmake"
+
 	exit 0
 	;;
 rustbuild)	# rustbuild wrapper

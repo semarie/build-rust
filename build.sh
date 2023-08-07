@@ -225,6 +225,7 @@ patch)	# apply local patches
 	fi
 
 	## llvm: properly parse library suffixes on OpenBSD
+	echo "patching: llvm: properly parse library suffixes on OpenBSD"
 	sed -i -e 's/suffixes ${CMAKE_FIND_LIBRARY_SUFFIXES}/suffixes ${CMAKE_FIND_LIBRARY_SUFFIXES} ".so.[0-9]+.[0-9]+"/' \
 		"${rustc_xdir}/src/llvm-project/llvm/cmake/modules/GetLibraryName.cmake"
 

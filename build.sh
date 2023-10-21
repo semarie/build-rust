@@ -186,7 +186,13 @@ patch)	# apply local patches
 
 	## bootstrap: pass optimization flags: https://github.com/rust-lang/rust/issues/39900
 	echo 'patching: bootstrap: pass optimization flags'
-	sed -i 's/.*|s| !s.starts_with("-O") && !s.starts_with("\/O").*//' "${rustc_xdir}/src/bootstrap/lib.rs"
+	if [ -r "${rustc_xdir}/src/bootstrap/lib.rs" ] ; then
+		# old
+		sed -i 's/.*|s| !s.starts_with("-O") && !s.starts_with("\/O").*//' "${rustc_xdir}/src/bootstrap/lib.rs"
+	else
+		# new
+		sed -i 's/.*|s| !s.starts_with("-O") && !s.starts_with("\/O").*//' "${rustc_xdir}/src/bootstrap/src/lib.rs"
+	fi
 
 	## openssl-sys: libressl in -current isn't explicitly supported
 	echo "patching: openssl-sys: libressl in -current isn't explicitly supported"

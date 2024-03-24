@@ -38,6 +38,7 @@ SUDO="${SUDO:-}"
 ccache="${ccache:-yes}"
 llvm_config="${llvm_config:-no}"
 CFLAGS="${CFLAGS:--O2 -pipe}"
+dep_dir="${dep_dir:-}"
 
 def_MAKE_JOBS=$(sysctl -n hw.ncpuonline)
 MAKE_JOBS=${MAKE_JOBS:-${def_MAKE_JOBS}}
@@ -292,7 +293,9 @@ configure)	# configure target
 	# configure target dependent stuff
 	case "${target}" in
 	beta)
-		dep_dir="/usr/local"
+		if [[ -z "${dep_dir:-}" ]]; then
+		   dep_dir="/usr/local"
+		fi
 
 		# install rustc-stable
 		if [[ ! -x "${dep_dir}/bin/rustc" ]]; then
@@ -305,7 +308,9 @@ configure)	# configure target
 		fi
 		;;
 	nightly)
+	    if [[ -z "${dep_dir:-}" ]]; then
 		dep_dir="${install_dir}/beta"
+	    fi
 
 		# install rustc-beta (will rebuild only if needed)
 		"${build_rust}" beta

@@ -38,7 +38,7 @@ SUDO="${SUDO:-}"
 ccache="${ccache:-yes}"
 llvm_config="${llvm_config:-no}"
 CFLAGS="${CFLAGS:--O2 -pipe}"
-dep_dir="${dep_dir:-}"
+rust_base_dir="${rust_base_dir:-}"
 
 def_MAKE_JOBS=$(sysctl -n hw.ncpuonline)
 MAKE_JOBS=${MAKE_JOBS:-${def_MAKE_JOBS}}
@@ -293,24 +293,24 @@ configure)	# configure target
 	# configure target dependent stuff
 	case "${target}" in
 	beta)
-		if [[ -z "${dep_dir:-}" ]]; then
-		   dep_dir="/usr/local"
+		if [[ -z "${rust_base_dir}" ]]; then
+			rust_base_dir="/usr/local"
 		fi
 
 		# install rustc-stable
-		if [[ ! -x "${dep_dir}/bin/rustc" ]]; then
+		if [[ ! -x "${rust_base_dir}/bin/rustc" ]]; then
 			log "installing rustc-stable (from ports)"
 			${SUDO} pkg_add -a rust
 		fi
-		if [[ ! -x "${dep_dir}/bin/rustfmt" ]]; then
+		if [[ ! -x "${rust_base_dir}/bin/rustfmt" ]]; then
 			log "installing rustfmt-stable (from ports)"
 			${SUDO} pkg_add -a rust-rustfmt
 		fi
 		;;
 	nightly)
-	    if [[ -z "${dep_dir:-}" ]]; then
-		dep_dir="${install_dir}/beta"
-	    fi
+		if [[ -z "${rust_base_dir}" ]]; then
+			rust_base_dir="${install_dir}/beta"
+		fi
 
 		# install rustc-beta (will rebuild only if needed)
 		"${build_rust}" beta
@@ -326,18 +326,18 @@ configure)	# configure target
 	log "info: required stage0:"
 	sed -ne '/"compiler": {/,/}/p' "${rustc_xdir}/src/stage0.json"
 	log "info: rustc -vV"
-	"${dep_dir}/bin/rustc" -vV | sed 's/^/	/'
+	"${rust_base_dir}/bin/rustc" -vV | sed 's/^/	/'
 	log "info: cargo -vV"
-	"${dep_dir}/bin/cargo" -vV | sed 's/^/	/'
+	"${rust_base_dir}/bin/cargo" -vV | sed 's/^/	/'
 	log "info: rustfmt -V"
-	"${dep_dir}/bin/rustfmt" -V | sed 's/^/	/'
+	"${rust_base_dir}/bin/rustfmt" -V | sed 's/^/	/'
 
 	# check rustc version
 	case "${target}" in
 	beta)
 		required=$(sed -ne '/"compiler": {/,/}/p' "${rustc_xdir}/src/stage0.json" \
 			| sed -ne 's/^ *"version": "\(.*\.\)0"/\1/p')
-		if ! "${dep_dir}/bin/rustc" -vV | grep -qF "release: ${required}" 2>/dev/null; then
+		if ! "${rust_base_dir}/bin/rustc" -vV | grep -qF "release: ${required}" 2>/dev/null; then
 			log "error: build requires rustc ${required}"
 			exit 1
 		fi
@@ -357,9 +357,9 @@ configure)	# configure target
 changelog-seen = 2
 
 [build]
-rustc = "${dep_dir}/bin/rustc"
-cargo = "${dep_dir}/bin/cargo"
-rustfmt = "${dep_dir}/bin/rustfmt"
+rustc = "${rust_base_dir}/bin/rustc"
+cargo = "${rust_base_dir}/bin/cargo"
+rustfmt = "${rust_base_dir}/bin/rustfmt"
 python = "/usr/local/bin/python3"
 gdb = "/usr/local/bin/egdb"
 #docs = false

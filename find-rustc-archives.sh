@@ -1,4 +1,4 @@
-#!/bin/ksh -u
+#!/bin/ksh -eu
 #
 #  Copyright (c) 2024 Anthony Bocci <anthony.bocci+buildrust@protonmail.com>
 #
@@ -59,28 +59,35 @@ fi
 tmp_dir="/tmp/build-rust-archives"
 archive_name="rustc-$target-src.tar.gz"
 extracted_dir="rustc-$target-src"
-mkdir -p -- $tmp_dir
+mkdir -p $tmp_dir
 
 # Loop over each day of the given month / year and check if an archive exists
 for day in $(seq $first_day 1 $last_day); do
     day_str=$(printf "%02d" $day)
     month_str=$(printf "%02d" $month)
     url="https://static.rust-lang.org/dist/$year-$month_str-$day_str"
-    curl -s -I "$url/$archive_name" | head -n 1 | grep '404' > /dev/null 2>&1
-    archive_found=$?
+
+    http_response=$(curl -s -I "$url/$archive_name")
+    status_code=$(echo $http_response | head -n 1 | cut -d' ' -f2)
+    # Get the remote file length. Grep behaves strangely with \r\n, so they
+    # are replaced with \n. One is added at the end of the input, otherwise
+    # grep doesn't capture the last line.
+    remote_file_length=$(echo "$http_response\n" | tr '\r\n' '\n' | grep -i 'content-length' | cut -d' ' -f2)
+    remote_file_length=$(($remote_file_length + 0))
     # There is no archive at this URL, skip this day
-    if [ $archive_found -eq 0 ]; then
+    if [ $status_code != '200' ]; then
 	continue
     fi
     out_dir="$tmp_dir/$year-$month_str-$day_str"
-    mkdir -p -- $out_dir
+    mkdir -p $out_dir
     cd "$out_dir"
 
     # If the archive file is there but incomplete, remove it
     # It happens when the download is interrupted
     if [ -f $archive_name ]; then
-	tar -tzf "$archive_name" > /dev/null 2>&1
-	if [ $? -eq 1 ]; then
+	local_file_length=$(stat -f '%z' $archive_name)
+	local_file_length=$(($local_file_length + 0))
+	if [ $local_file_length -lt $remote_file_length ]; then
 	    rm "$archive_name"
 	fi
     fi

@@ -1,6 +1,6 @@
 #!/bin/ksh -eu
 #
-#  Copyright (c) 2017 Sebastien Marie <semarie@online.fr>
+#  Copyright (c) 2017-2024 Sebastien Marie <semarie@kapouay.eu.org>
 # 
 #  Permission to use, copy, modify, and distribute this software for any
 #  purpose with or without fee is hereby granted, provided that the above
@@ -323,8 +323,13 @@ configure)	# configure target
 
 	# print information on current build
 	log "info: building: $(cat ${rustc_xdir}/version)"
-	log "info: required stage0:"
-	sed -ne '/"compiler": {/,/}/p' "${rustc_xdir}/src/stage0.json"
+	if [ -f "${rustc_xdir}/src/stage0.json" ]; then
+		log "info: required stage0:"
+		sed -ne '/"compiler": {/,/}/p' "${rustc_xdir}/src/stage0.json"
+	else
+		log "info: required stage0:"
+		grep "^compiler_" "${rustc_xdir}/src/stage0"
+	fi
 	log "info: rustc -vV"
 	"${rust_base_dir}/bin/rustc" -vV | sed 's/^/	/'
 	log "info: cargo -vV"

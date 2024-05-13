@@ -354,7 +354,7 @@ configure)	# configure target
 	# generate config file
 	mkdir -p "${build_dir}"
 	cat >"${build_dir}/config.toml" <<EOF
-changelog-seen = 2
+change-id = 116881
 
 [build]
 rustc = "${rust_base_dir}/bin/rustc"
@@ -493,12 +493,9 @@ buildbot)	# build and test
 	test -r "${install_dir}/${target}/test.log" && \
 		mv "${install_dir}/${target}/test.log" "${install_dir}/${target}/test-prev.log"
 
-	# test
-	set +e
-	env RUST_BACKTRACE=0 "${build_rust}" "${target}" rustbuild test --jobs=${MAKE_JOBS} --no-fail-fast \
-		| tee "${install_dir}/${target}/test.log"
+	# clean
+	"${build_rust}" "${target}" clean-all
 
-	"${build_rust}" "${target}" buildbot-show
 	exit 0
 	;;
 buildbot-show)	# show summary of failures

@@ -323,31 +323,14 @@ configure)	# configure target
 
 	# print information on current build
 	log "info: building: $(cat ${rustc_xdir}/version)"
-	if [ -f "${rustc_xdir}/src/stage0.json" ]; then
-		log "info: required stage0:"
-		sed -ne '/"compiler": {/,/}/p' "${rustc_xdir}/src/stage0.json"
-	else
-		log "info: required stage0:"
-		grep "^compiler_" "${rustc_xdir}/src/stage0"
-	fi
+	log "info: required stage0:"
+	grep "^compiler_" "${rustc_xdir}/src/stage0"
 	log "info: rustc -vV"
 	"${rust_base_dir}/bin/rustc" -vV | sed 's/^/	/'
 	log "info: cargo -vV"
 	"${rust_base_dir}/bin/cargo" -vV | sed 's/^/	/'
 	log "info: rustfmt -V"
 	"${rust_base_dir}/bin/rustfmt" -V | sed 's/^/	/'
-
-	# check rustc version
-	case "${target}" in
-	beta)
-		required=$(sed -ne '/"compiler": {/,/}/p' "${rustc_xdir}/src/stage0.json" \
-			| sed -ne 's/^ *"version": "\(.*\.\)0"/\1/p')
-		if ! "${rust_base_dir}/bin/rustc" -vV | grep -qF "release: ${required}" 2>/dev/null; then
-			log "error: build requires rustc ${required}"
-			exit 1
-		fi
-		;;
-	esac
 
 	# llvm stuff
 	if [[ ${llvm_config} != "no" ]]; then
@@ -377,7 +360,6 @@ prefix = "${install_dir}/${target}"
 
 [dist]
 src-tarball = false
-missing-tools = true
 
 [rust]
 channel = "${target}"

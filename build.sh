@@ -272,7 +272,7 @@ pre-configure)
 	for _p in cc c++; do
 		if [[ "${ccache}" != "yes" ]]; then
 			ln -fs "/usr/bin/${_p}" "${build_dir}/bin/${_p}"
-		else	
+		else
 			rm -f "${build_dir}/bin/${_p}" || true
 			echo '#!/bin/sh' >"${build_dir}/bin/${_p}"
 			echo "exec ccache /usr/bin/${_p} \"\${@}\"" \
@@ -410,12 +410,6 @@ install)	# install sets
 		rm -rf -- "${tmpdir}"
 	done
 
-	# replace binaries with a wrapper (for LD_LIBRARY_PATH)
-	for bin in rustc rustdoc cargo rustfmt; do
-		mv "${install_dir}/${target}/bin/${bin}" \
-			"${install_dir}/${target}/bin/${bin}"
-	done
-
 	# XXX copy system lib ?
 	;;
 beta|nightly)	# prepare a release
@@ -469,7 +463,7 @@ buildbot)	# build and test
 	# mark as running
 	echo "started building ${target} at $(date) with pid $$" > "${build_dir}/lock"
 	trap "rm -f -- '${build_dir}/lock'" EXIT ERR 1 2 3 13 15
-	
+
 	# force a configure
 	"${build_rust}" "${target}" configure
 

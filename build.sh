@@ -379,7 +379,8 @@ EOF
 build)	# invoke rustbuild for making dist files
 
 	# make build
-	"${build_rust}" "${target}" rustbuild dist --jobs=${MAKE_JOBS}
+	"${build_rust}" "${target}" rustbuild dist --jobs=${MAKE_JOBS} \
+		rust-std rustc cargo clippy rustfmt
 
 	# copy distfiles
 	log "copying ${target} distfiles to ${dist_dir}"

@@ -154,7 +154,7 @@ init)	# install some required packages (using pkg_add)
 	fi
 
 	exec ${SUDO} pkg_add -aU 'python3' 'gmake' 'git' \
-		'curl' 'cmake' 'bash' 'ggrep' 'gdb' \
+		'curl' 'cmake' 'bash' 'ggrep' 'gdb' 'libffi' \
 		${_ccache} \
 		${_llvm}
 	;;
@@ -205,6 +205,7 @@ patch)	# apply local patches
 		"${rustc_xdir}/vendor/openssl-sys"*"/build/main.rs"
 	sed -i 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/vendor/openssl-sys"*"/.cargo-checksum.json"
 
+
 	## filetime: don't try to use set_file_times_u()
 	if grep -q '^1\.22\.' "${rustc_xdir}/version"; then
 		echo "patching: filetime: don't try to use set_file_times_u()"
@@ -235,6 +236,15 @@ patch)	# apply local patches
 	echo "patching: llvm: properly parse library suffixes on OpenBSD"
 	sed -i -e 's/suffixes ${CMAKE_FIND_LIBRARY_SUFFIXES}/suffixes ${CMAKE_FIND_LIBRARY_SUFFIXES} ".so.[0-9]+.[0-9]+"/' \
 		"${rustc_xdir}/src/llvm-project/llvm/cmake/modules/GetLibraryName.cmake"
+
+	## force libffi-sys to use the system-wide libffi
+	sed -i '/\[features\]/a\
+default = \["system"\]
+' "${rustc_xdir}/vendor/libffi-sys"*"/Cargo.toml"
+	sed -i '/pub fn probe_and_link() {/a\
+println!("cargo:rustc-link-search=native=\/usr\/local\/lib");
+' "${rustc_xdir}/vendor/libffi-sys"*"/build/not_msvc.rs"
+	sed -i 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/vendor/libffi-sys"*"/.cargo-checksum.json"
 
 	exit 0
 	;;

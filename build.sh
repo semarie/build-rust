@@ -1,6 +1,6 @@
 #!/bin/ksh -eu
 #
-#  Copyright (c) 2017-2024 Sebastien Marie <semarie@kapouay.eu.org>
+#  Copyright (c) 2017-2025 Sebastien Marie <semarie@kapouay.eu.org>
 # 
 #  Permission to use, copy, modify, and distribute this software for any
 #  purpose with or without fee is hereby granted, provided that the above
@@ -154,7 +154,7 @@ init)	# install some required packages (using pkg_add)
 	fi
 
 	exec ${SUDO} pkg_add -aU 'python3' 'gmake' 'git' \
-		'curl' 'cmake' 'bash' 'ggrep' 'gdb' \
+		'curl' 'cmake' 'bash' 'ggrep' 'gdb' 'libffi' \
 		${_ccache} \
 		${_llvm}
 	;;
@@ -210,6 +210,16 @@ patch)	# apply local patches
 		echo "patching: filetime: don't try to use set_file_times_u()"
 		sed -i 's/android/openbsd/g' "${rustc_xdir}/vendor/filetime/src/unix.rs"
 		sed -i 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/vendor/filetime/.cargo-checksum.json"
+	fi
+
+	## libffi-sys: force system-wide libffi use
+	if [ -f "${rustc_xdir}/vendor/libffi-sys"*"/Cargo.toml" ]; then
+		echo "patching: libffi-sys: force system-wide libffi use"
+		sed -i '/\[features\]/a\
+default = \["system"\]
+' "${rustc_xdir}/vendor/libffi-sys"*"/Cargo.toml"
+		sed -i 's/pub fn probe_and_link() {/& println!("cargo:rustc-link-search=native=\/usr\/local\/lib");/' "${rustc_xdir}/vendor/libffi-sys"*"/build/not_msvc.rs"
+		sed -i 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/vendor/libffi-sys"*"/.cargo-checksum.json"
 	fi
 
 	## link to libc++

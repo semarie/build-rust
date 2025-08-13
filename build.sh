@@ -60,7 +60,8 @@ LIBSSH2_SYS_USE_PKG_CONFIG=1
 LIBGIT2_SYS_USE_PKG_CONFIG=1
 VERBOSE=${VERBOSE:-1}
 RUST_BACKTRACE=${RUST_BACKTRACE:-1}
-export CARGO_HOME LIBSSH2_SYS_USE_PKG_CONFIG LIBGIT2_SYS_USE_PKG_CONFIG VERBOSE CFLAGS RUST_BACKTRACE
+RUSTFLAGS="-C link-arg=-Wl,-z,nobtcfi"
+export CARGO_HOME LIBSSH2_SYS_USE_PKG_CONFIG LIBGIT2_SYS_USE_PKG_CONFIG VERBOSE CFLAGS RUST_BACKTRACE RUSTFLAGS
 
 case $(arch -s) in
 i386)
@@ -352,7 +353,7 @@ configure)	# configure target
 	# generate config file
 	mkdir -p "${build_dir}"
 	cat >"${build_dir}/config.toml" <<EOF
-change-id = 116881
+change-id = 136941
 
 [build]
 rustc = "${rust_base_dir}/bin/rustc"

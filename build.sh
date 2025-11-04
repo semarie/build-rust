@@ -214,7 +214,7 @@ patch)	# apply local patches
 		echo "patching: libffi-sys: force system-wide libffi use (due to RWX)"
 		sed -i 's/default = .*/default = \["std", "system"\]/' \
 			"${rustc_xdir}/vendor/libffi-sys"*"/Cargo.toml"
-		sed -i 's/pub fn probe_and_link() {/& println!("cargo:rustc-link-search=native=\/usr\/local\/lib");' \
+		sed -i 's/pub fn probe_and_link() {/& println!("cargo:rustc-link-search=native=\/usr\/local\/lib");/' \
 			"${rustc_xdir}/vendor/libffi-sys"*"/build/not_msvc.rs"
 		sed -i 's/"files":{[^}]*}/"files":{}/' \
 			"${rustc_xdir}/vendor/libffi-sys"*"/.cargo-checksum.json"

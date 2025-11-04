@@ -155,7 +155,7 @@ init)	# install some required packages (using pkg_add)
 	fi
 
 	exec ${SUDO} pkg_add -aU 'python3' 'gmake' 'git' \
-		'curl' 'cmake' 'bash' 'ggrep' 'gdb' 'libffi' \
+		'curl' 'cmake' 'bash' 'ggrep' 'gdb' \
 		${_ccache} \
 		${_llvm}
 	;;
@@ -183,9 +183,6 @@ patch)	# apply local patches
 
 	log "patching ${target}"
 
-	## bootstrap: create an empty .gitmodules file
-	touch "${rustc_xdir}/.gitmodules"
-
 	## bootstrap: pass optimization flags: https://github.com/rust-lang/rust/issues/39900
 	echo 'patching: bootstrap: pass optimization flags'
 	if [ -r "${rustc_xdir}/src/bootstrap/lib.rs" ] ; then
@@ -205,42 +202,6 @@ patch)	# apply local patches
 		-e "/_ => version_error(),/{g; s/(.*) =>/_ =>/; }" \
 		"${rustc_xdir}/vendor/openssl-sys"*"/build/main.rs"
 	sed -i 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/vendor/openssl-sys"*"/.cargo-checksum.json"
-
-	## filetime: don't try to use set_file_times_u()
-	if grep -q '^1\.22\.' "${rustc_xdir}/version"; then
-		echo "patching: filetime: don't try to use set_file_times_u()"
-		sed -i 's/android/openbsd/g' "${rustc_xdir}/vendor/filetime/src/unix.rs"
-		sed -i 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/vendor/filetime/.cargo-checksum.json"
-	fi
-
-	## libffi-sys: force system-wide libffi use
-	if [ -f "${rustc_xdir}/vendor/libffi-sys"*"/Cargo.toml" ]; then
-		echo "patching: libffi-sys: force system-wide libffi use"
-		sed -i '/\[features\]/a\
-default = \["system"\]
-' "${rustc_xdir}/vendor/libffi-sys"*"/Cargo.toml"
-		sed -i 's/pub fn probe_and_link() {/& println!("cargo:rustc-link-search=native=\/usr\/local\/lib");/' "${rustc_xdir}/vendor/libffi-sys"*"/build/not_msvc.rs"
-		sed -i 's/"files":{[^}]*}/"files":{}/' "${rustc_xdir}/vendor/libffi-sys"*"/.cargo-checksum.json"
-	fi
-
-	## link to libc++
-	if grep -q '^1\.2[23]\.' "${rustc_xdir}/version"; then
-		echo "patching: link to libc++"
-		sed -i 's/"estdc\+\+"/"c++"/' "${rustc_xdir}/src/librustc_llvm/build.rs"
-		sed -i 's/"cargo:rustc-link-lib=gcc"/"cargo:rustc-link-lib=c++abi"/' "${rustc_xdir}/src/libunwind/build.rs"
-	fi
-
-	## use system libcompiler_rt
-	if grep -q '^1.2[34567]\.' "${rustc_xdir}/version"; then
-		echo "patching: use system libcompiler_rt"
-		sed -i '/env::var("TARGET").unwrap();$/s/$/if target.contains("openbsd") { println!("cargo:rustc-link-search=native=\/usr\/lib"); println!("cargo:rustc-link-lib=static=compiler_rt"); return; }/' "${rustc_xdir}/src/libcompiler_builtins/build.rs"
-	fi
-
-	## use ninja for building binaryen
-	if grep -q '^1.2[345]\.' "${rustc_xdir}/version"; then
-		echo "patching: use ninja for building binaryen"
-		sed -i '/\.build_target("binaryen")$/s/$/.generator("Ninja")/' "${rustc_xdir}/src/librustc_binaryen/build.rs"
-	fi
 
 	## llvm: properly parse library suffixes on OpenBSD
 	echo "patching: llvm: properly parse library suffixes on OpenBSD"

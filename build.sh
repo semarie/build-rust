@@ -95,10 +95,10 @@ refetch() {
 		$(cat "${file}.etag") != "${new_etag}" \
 		]]; then
 
-		log "fetching (cache miss): ${message}"
+		log "fetching (cache miss): ${message}: ${url}"
 		curl -L -o "${file}" "${url}"
 	else
-		log "fetching (cache hit): ${message}"
+		log "fetching (cache hit): ${message}: ${url}"
 	fi
 
 	# save the new ETag

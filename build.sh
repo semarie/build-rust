@@ -154,8 +154,8 @@ init)	# install some required packages (using pkg_add)
 		_ccache='ccache'
 	fi
 
-	exec ${SUDO} pkg_add -aU 'python3' 'gmake' 'git' \
-		'curl' 'cmake' 'bash' 'ggrep' 'gdb' \
+	exec ${SUDO} pkg_add -aU 'python3' 'gmake' 'git' 'xz' \
+		'curl' 'cmake' 'bash' 'ggrep' 'gdb' 'libffi' \
 		${_ccache} \
 		${_llvm}
 	;;
@@ -207,6 +207,17 @@ patch)	# apply local patches
 	echo "patching: llvm: properly parse library suffixes on OpenBSD"
 	sed -i -e 's/suffixes ${CMAKE_FIND_LIBRARY_SUFFIXES}/suffixes ${CMAKE_FIND_LIBRARY_SUFFIXES} ".so.[0-9]+.[0-9]+"/' \
 		"${rustc_xdir}/src/llvm-project/llvm/cmake/modules/GetLibraryName.cmake"
+
+	## libffi-sys: force system-wide libffi use (due to RWX)
+	if [ -f "${rustc_xdir}/vendor/libffi-sys"*"/Cargo.toml" ]; then
+		echo "patching: libffi-sys: force system-wide libffi use (due to RWX)"
+		sed -i 's/default = .*/default = \["std", "system"\]/' \
+			"${rustc_xdir}/vendor/libffi-sys"*"/Cargo.toml"
+		sed -i 's/pub fn probe_and_link() {/& println!("cargo:rustc-link-search=native=\/usr\/local\/lib");' \
+			"${rustc_xdir}/vendor/libffi-sys"*"/build/not_msvc.rs"
+		sed -i 's/"files":{[^}]*}/"files":{}/' \
+			"${rustc_xdir}/vendor/libffi-sys"*"/.cargo-checksum.json"
+	fi
 
 	exit 0
 	;;

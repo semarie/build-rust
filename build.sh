@@ -161,9 +161,9 @@ init)	# install some required packages (using pkg_add)
 	;;
 fetch)	# fetch latest rust version
 	mkdir -p -- "${dist_dir}"
-	refetch "rustc-${target}-src.tar.gz" \
-		"${distfiles_rustc_base}/rustc-${target}-src.tar.gz" \
-		"${dist_dir}/rustc-${target}-src.tar.gz" \
+	refetch "rustc-${target}-src.tar.xz" \
+		"${distfiles_rustc_base}/rustc-${target}-src.tar.xz" \
+		"${dist_dir}/rustc-${target}-src.tar.xz" \
 	;;
 extract)	# extract rust version from dist_dir to build_dir
 	"${build_rust}" "${target}" fetch
@@ -174,8 +174,9 @@ extract)	# extract rust version from dist_dir to build_dir
 	fi
 	mkdir -p -- "${build_dir}"
 
-	log "extracting rustc-${target}-src.tar.gz"
-	exec tar zxf "${dist_dir}/rustc-${target}-src.tar.gz" -C "${build_dir}"
+	log "extracting rustc-${target}-src.tar.xz"
+	xzcat "${dist_dir}/rustc-${target}-src.tar.xz" \
+	| exec tar xf - -C "${build_dir}"
 	;;
 patch)	# apply local patches
 	[[ ! -d "${rustc_xdir}" ]] && \
@@ -403,9 +404,9 @@ beta|nightly)	# prepare a release
 
 	if [[ -z "${REBUILD:-}" && \
 		-x "${install_dir}/${target}/bin/rustc" && \
-		-r "${dist_dir}/rustc-${target}-src.tar.gz" && \
+		-r "${dist_dir}/rustc-${target}-src.tar.xz" && \
 		"${install_dir}/${target}/bin/rustc" -nt \
-			"${dist_dir}/rustc-${target}-src.tar.gz" ]]; then
+			"${dist_dir}/rustc-${target}-src.tar.xz" ]]; then
 
 		log "already up-to-date: ${target}"
 		exit 0
@@ -423,9 +424,9 @@ beta|nightly)	# prepare a release
 
 	# ensure it has been installed
 	if [[ -x "${install_dir}/${target}/bin/rustc" && \
-		-r "${dist_dir}/rustc-${target}-src.tar.gz" && \
+		-r "${dist_dir}/rustc-${target}-src.tar.xz" && \
 		"${install_dir}/${target}/bin/rustc" -nt \
-		"${dist_dir}/rustc-${target}-src.tar.gz" ]]; then
+		"${dist_dir}/rustc-${target}-src.tar.xz" ]]; then
 
 		# keep a copy of latest good log
 		log "task finished successfully: keeping build.log -> build-good.log"
